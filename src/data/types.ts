@@ -27,6 +27,26 @@ export interface Dimension {
   low: string;
 }
 
+/** A finer-grained score under a shared dimension (drill-down detail). */
+export interface SubScore {
+  label: string;
+  /** 0–10, same within-category relativity as top-level scores. */
+  value: number;
+  note?: string;
+}
+
+/**
+ * An extra tradeoff axis that only makes sense for one category (e.g.
+ * "Consistency guarantees" for databases). Defined once on the category so
+ * every tech in it scores the same axes; rendered in detail views and the
+ * Compare table — never on the shared radar or the weight sliders.
+ */
+export interface CategoryDimension {
+  key: string;
+  label: string;
+  question: string;
+}
+
 /** Stack layers. Order here is the order slots render in the Stack Builder. */
 export type CategoryId =
   | "architecture"
@@ -48,6 +68,8 @@ export interface Category {
   description: string;
   /** Optional layers can be left empty in the Stack Builder without a warning. */
   optionalInStack?: boolean;
+  /** Category-specific tradeoff axes beyond the shared eight. */
+  nativeDimensions?: CategoryDimension[];
 }
 
 /**
@@ -164,6 +186,17 @@ export interface Tech {
   scores: Record<DimensionKey, number>;
   /** Optional one-liners justifying non-obvious scores — surfaced in tooltips. */
   scoreNotes?: Partial<Record<DimensionKey, string>>;
+  /**
+   * Optional drill-down under a shared dimension, e.g. performance →
+   * throughput / startup / memory. Answers "why is this a 6?" with data.
+   */
+  subScores?: Partial<Record<DimensionKey, SubScore[]>>;
+  /**
+   * Scores for the category's nativeDimensions (keys must match the
+   * category's definition — enforced by the audit script, not the compiler).
+   */
+  nativeScores?: Record<string, number>;
+  nativeScoreNotes?: Record<string, string>;
   strengths: string[];
   weaknesses: string[];
   /** Concrete situations where this is the right pick. */

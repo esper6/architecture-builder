@@ -29,6 +29,23 @@ export const CATEGORIES: Category[] = [
     question: "How do clients talk to the server?",
     description:
       "The contract between frontend and backend (and between services). Styles differ in flexibility, tooling, caching behavior, and how much they couple the two sides together.",
+    nativeDimensions: [
+      {
+        key: "cacheability",
+        label: "Cacheability",
+        question: "How well do responses cache at HTTP/CDN layers without custom work?",
+      },
+      {
+        key: "streaming",
+        label: "Streaming & Push",
+        question: "How naturally does it handle server push and long-lived streams?",
+      },
+      {
+        key: "contractRigor",
+        label: "Contract Rigor",
+        question: "How strongly is the client/server contract specified and enforced?",
+      },
+    ],
   },
   {
     id: "data-access",
@@ -43,6 +60,23 @@ export const CATEGORIES: Category[] = [
     question: "Where does the data live?",
     description:
       "The most consequential and hardest-to-reverse choice after architecture style. Data outlives every framework above it — teams rewrite frontends for sport, but nobody migrates a primary database for fun.",
+    nativeDimensions: [
+      {
+        key: "queryFlexibility",
+        label: "Query Flexibility",
+        question: "How freely can you ask questions you didn't plan for at design time?",
+      },
+      {
+        key: "consistency",
+        label: "Consistency Guarantees",
+        question: "How strong (and how simple to reason about) are guarantees under concurrency and distribution?",
+      },
+      {
+        key: "schemaFlexibility",
+        label: "Schema Flexibility",
+        question: "How cheaply can the shape of the data evolve after launch?",
+      },
+    ],
   },
   {
     id: "caching",

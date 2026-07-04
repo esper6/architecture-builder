@@ -34,6 +34,13 @@ export const BACKEND_TECHS: Tech[] = [
       maturity:
         "The framework itself is rock solid; the '9' not '10' remembers the Framework→Core rewrite — old ASP.NET knowledge and libraries didn't all survive the move.",
     },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 9 },
+        { label: "Startup & cold start", value: 6, note: "JIT warm-up on first requests; Native AOT closes the gap where cold start actually matters." },
+        { label: "Memory footprint", value: 6 },
+      ],
+    },
     strengths: [
       "Top-tier performance for a batteries-included framework — you rarely leave it for speed reasons",
       "Everything first-party and designed together: DI, config, auth, logging, EF Core, SignalR",
@@ -104,6 +111,13 @@ export const BACKEND_TECHS: Tech[] = [
         "Fast for the first week; the 'you assemble everything' cost (validation, auth, error handling, structure) compounds as the app grows.",
       scalability:
         "The '5' is org-scale: with no imposed structure, ten Express codebases are ten different architectures — coherence at team scale is on you.",
+    },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 5 },
+        { label: "Startup & cold start", value: 8 },
+        { label: "Memory footprint", value: 7 },
+      ],
     },
     strengths: [
       "Everyone knows it: the largest hiring pool and Stack Overflow coverage of any backend framework",
@@ -182,6 +196,13 @@ export const BACKEND_TECHS: Tech[] = [
       ecosystem:
         "Healthy first-party plugin set and growing adoption, but the tutorial base, middleware long tail, and 'candidates who already know it' pool are all a fraction of Express's.",
     },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 7, note: "Same Node runtime as Express — the gain is lower framework overhead and schema-compiled serialization." },
+        { label: "Startup & cold start", value: 8 },
+        { label: "Memory footprint", value: 7 },
+      ],
+    },
     strengths: [
       "Fastest mainstream Node framework — serialization and routing engineered for throughput",
       "Schema-first request/response validation is built in, not a middleware you pick and wire",
@@ -249,6 +270,13 @@ export const BACKEND_TECHS: Tech[] = [
         "The '8' is team-scale: enforced modules and DI keep many developers coherent in one codebase — Nest's actual reason to exist.",
       typeSafety:
         "TypeScript-first, but decorator metadata and runtime DI mean some wiring errors surface at boot rather than compile time.",
+    },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 5, note: "Rides its HTTP adapter — Express by default; swapping in Fastify buys real throughput for one config change." },
+        { label: "Startup & cold start", value: 6 },
+        { label: "Memory footprint", value: 6 },
+      ],
     },
     strengths: [
       "One prescribed architecture: onboarding onto any Nest codebase feels familiar",
@@ -329,6 +357,13 @@ export const BACKEND_TECHS: Tech[] = [
       learningEase:
         "Spring Boot is easy to start; Spring is a career. The gap between 'it works by magic' and 'I know why' is the widest in this category.",
     },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 8, note: "Excellent once warm — the JVM's whole bargain." },
+        { label: "Startup & cold start", value: 3, note: "The famous cost: seconds of JVM warm-up. GraalVM native images fix it by trading away some of the dynamic runtime." },
+        { label: "Memory footprint", value: 3 },
+      ],
+    },
     strengths: [
       "Deepest ecosystem in enterprise computing: batch, messaging, security, integration — all first-party, all maintained",
       "Twenty years of patterns for every problem, including the obscure enterprise-integration ones",
@@ -402,6 +437,13 @@ export const BACKEND_TECHS: Tech[] = [
         "Young-ish and largely one lead maintainer's project; the Pydantic v1→v2 migration was a real ecosystem event.",
       opsSimplicity:
         "The GIL means scaling is multi-process (uvicorn/gunicorn workers) behind a reverse proxy — standard, but more moving parts than a single binary.",
+    },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 4, note: "Async holds up well under I/O-bound concurrency; CPU-bound work hits the GIL." },
+        { label: "Startup & cold start", value: 7 },
+        { label: "Memory footprint", value: 6 },
+      ],
     },
     strengths: [
       "Fastest idea-to-endpoint velocity in the category: define a Pydantic model, get validation and docs for free",
@@ -479,6 +521,13 @@ export const BACKEND_TECHS: Tech[] = [
         "Dynamically-typed Python plus a string-heavy ORM and template layer; django-stubs helps but it's retrofit, not foundation.",
       maturity:
         "Twenty years of unbroken releases, a security track record institutions trust, and deprecation policies other projects should study.",
+    },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 3 },
+        { label: "Startup & cold start", value: 6 },
+        { label: "Memory footprint", value: 5 },
+      ],
     },
     strengths: [
       "The admin interface alone justifies it for internal tools — a usable back-office UI generated from your models",
@@ -561,6 +610,13 @@ export const BACKEND_TECHS: Tech[] = [
       ecosystem:
         "The cloud-native world is written in Go (Docker, Kubernetes, Terraform), so infra libraries are superb; the web-application long tail (admin panels, CMS-ish batteries) is thin.",
     },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 9 },
+        { label: "Startup & cold start", value: 10, note: "A static binary starting in milliseconds is half the ops pitch." },
+        { label: "Memory footprint", value: 9 },
+      ],
+    },
     strengths: [
       "Deploy story without equal: a single static binary in a scratch container, starting in milliseconds",
       "Goroutines make concurrent I/O natural — no async/await split, no colored functions",
@@ -631,6 +687,13 @@ export const BACKEND_TECHS: Tech[] = [
         "Same single-static-binary story as Go, with even smaller memory and no GC — a '9' only because compile times make the CI/CD loop heavier.",
       maturity:
         "Axum is well-run but young, and the async Rust ecosystem still has sharp edges the language team is actively sanding.",
+    },
+    subScores: {
+      performance: [
+        { label: "Throughput", value: 10 },
+        { label: "Startup & cold start", value: 10 },
+        { label: "Memory footprint", value: 10, note: "No GC and no runtime — the ceiling of this category." },
+      ],
     },
     strengths: [
       "The performance ceiling of the category: native code, zero-cost abstractions, no GC pauses ever",

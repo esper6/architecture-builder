@@ -182,6 +182,7 @@ export function CompareView({ weights }: { weights: Weights }) {
                 <ScoreTable
                   techs={compared.map((c) => c.tech)}
                   weights={weights}
+                  showNative
                 />
               </>
             )}

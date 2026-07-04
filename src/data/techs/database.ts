@@ -36,6 +36,11 @@ export const DATABASE_TECHS: Tech[] = [
       opsSimplicity:
         "Trivial to start, and managed offerings are everywhere — but vacuum tuning, connection limits, and upgrade planning are real once you're serious.",
     },
+    nativeScores: { queryFlexibility: 10, consistency: 9, schemaFlexibility: 7 },
+    nativeScoreNotes: {
+      schemaFlexibility:
+        "Strict DDL, but JSONB is a first-class escape hatch for the genuinely variable parts.",
+    },
     strengths: [
       "Balanced excellence: no single axis where it's the best, no axis where choosing it is a mistake",
       "JSONB with indexing covers most 'we need a document store' requirements inside a relational database",
@@ -106,6 +111,7 @@ export const DATABASE_TECHS: Tech[] = [
       scalability:
         "The engine scales fine; the license scales with it. Architectures bend around that: fewer, bigger boxes, and read offloading you'd do freely on Postgres becomes a cost decision.",
     },
+    nativeScores: { queryFlexibility: 9, consistency: 9, schemaFlexibility: 5 },
     strengths: [
       "SSMS and Query Store: the best day-two DBA experience in the category — diagnosing a bad plan regression is a first-class workflow, not archaeology",
       "Deep .NET integration: EF Core, SqlClient, and Azure SQL are a paved road with a decade of enterprise wear",
@@ -162,6 +168,11 @@ export const DATABASE_TECHS: Tech[] = [
         "The deployed base is arguably larger than Postgres's; the '9' vs Postgres's 10 is where the momentum is — new tools and tutorials ship Postgres-first now.",
       scalability:
         "Replication maturity is its quiet superpower — read scaling and failover patterns are ancient, boring, and documented. Vitess exists as the proven (if heavyweight) sharding path.",
+    },
+    nativeScores: { queryFlexibility: 8, consistency: 8, schemaFlexibility: 4 },
+    nativeScoreNotes: {
+      schemaFlexibility:
+        "Online DDL has improved, but large-table migrations remain the scary change window.",
     },
     strengths: [
       "Replication that has been boring for twenty years — read replicas and failover are solved, documented problems",
@@ -220,6 +231,11 @@ export const DATABASE_TECHS: Tech[] = [
         "No network hop means reads are microseconds — for single-machine workloads it outruns client-server databases that spend their budget on the wire.",
       typeSafety:
         "Flexible typing by default — it will happily store a string in your INTEGER column. STRICT tables (2021) fix this, but the ecosystem's default posture is permissive.",
+    },
+    nativeScores: { queryFlexibility: 8, consistency: 7, schemaFlexibility: 5 },
+    nativeScoreNotes: {
+      consistency:
+        "Single-writer serialization makes local reasoning trivial — the guarantee is strong because concurrency is restricted.",
     },
     strengths: [
       "Zero operations: no server to provision, patch, monitor, or wake up for — the entire ops burden is 'don't lose the file'",
@@ -292,6 +308,13 @@ export const DATABASE_TECHS: Tech[] = [
       maturity:
         "Long past its early durability scandals — a legitimately mature system now, but the reputation debt lingered for a reason.",
     },
+    nativeScores: { queryFlexibility: 6, consistency: 5, schemaFlexibility: 10 },
+    nativeScoreNotes: {
+      queryFlexibility:
+        "The aggregation pipeline is capable, but ad-hoc joins and analytics are not its home turf.",
+      consistency:
+        "Tunable read/write concerns; multi-document transactions exist but carry real costs.",
+    },
     strengths: [
       "Documents that match domain aggregates eliminate object-relational impedance — read one document, get the whole thing",
       "Schema flexibility is real power when shapes genuinely vary (product catalogs, CMS content, heterogeneous partner payloads)",
@@ -363,6 +386,15 @@ export const DATABASE_TECHS: Tech[] = [
       devVelocity:
         "Every new feature starts with 'is this access pattern in the table design?' — when yes, fast; when no, a schema-redesign conversation SQL never makes you have.",
     },
+    nativeScores: { queryFlexibility: 2, consistency: 6, schemaFlexibility: 8 },
+    nativeScoreNotes: {
+      queryFlexibility:
+        "You enumerate access patterns up front; a new question often means a new index or streaming to an analytics store.",
+      consistency:
+        "Per-request choice of eventual vs strongly consistent reads within a region.",
+      schemaFlexibility:
+        "Item shapes are free to vary; access patterns — the thing that actually constrains you — are not.",
+    },
     strengths: [
       "Guaranteed single-digit-millisecond reads and writes regardless of table size — a promise, not a benchmark",
       "Zero operational surface: no instances, no patching, no connection pools, pay-per-request if you want",
@@ -430,6 +462,11 @@ export const DATABASE_TECHS: Tech[] = [
       ecosystem:
         "Azure-deep, world-thin: excellent .NET SDKs and Azure integration, limited community gravity beyond — the Mongo-compatibility API exists partly to borrow an ecosystem.",
     },
+    nativeScores: { queryFlexibility: 5, consistency: 7, schemaFlexibility: 9 },
+    nativeScoreNotes: {
+      consistency:
+        "Five named consistency levels — the control is the feature, but you must understand what each level buys.",
+    },
     strengths: [
       "Turnkey global distribution: replicating to a new region is configuration, not a project",
       "Five explicit consistency levels — the industry's clearest articulation that consistency is a spectrum you choose on, not a checkbox",
@@ -491,6 +528,13 @@ export const DATABASE_TECHS: Tech[] = [
         "Compaction strategies, anti-entropy repair, tombstone management, JVM GC tuning: among the most operationally demanding systems in the whole catalog. Managed offerings (Astra, Keyspaces) soften this at the price of the flexibility that justified Cassandra.",
       typeSafety:
         "CQL enforces a real schema per table — more than the document stores — but nothing stops the classic modeling errors (unbounded partitions) that only fail at scale, in production.",
+    },
+    nativeScores: { queryFlexibility: 3, consistency: 4, schemaFlexibility: 6 },
+    nativeScoreNotes: {
+      queryFlexibility:
+        "Query-first modeling means the table IS the query; new questions mean new tables.",
+      consistency:
+        "Tunable per-query quorums; the default posture is eventual.",
     },
     strengths: [
       "Near-linear write scaling: need more throughput, add nodes — the promise, and it actually holds",

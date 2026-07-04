@@ -1,6 +1,7 @@
 /* Design tokens — light is the default; dark overrides via media query or
    an explicit data-theme attribute set by the header toggle. */
 :root {
+  color-scheme: light;
   --page: #f9f9f7;
   --surface-1: #fcfcfb;
   --surface-2: #f3f2ee;
@@ -27,6 +28,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --page: #0d0d0d;
     --surface-1: #1a1a19;
     --surface-2: #232322;
@@ -49,6 +51,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --page: #0d0d0d;
   --surface-1: #1a1a19;
   --surface-2: #232322;
@@ -98,6 +101,7 @@ a {
 button {
   font: inherit;
   cursor: pointer;
+  color: inherit;
 }
 
 /* ---------- App shell ---------- */
@@ -325,10 +329,6 @@ button {
   color: var(--muted);
   font-size: 0.78rem;
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 230px;
 }
 
 .rank-score {
@@ -420,6 +420,33 @@ button {
 .score-table .best {
   color: var(--good-text);
   font-weight: 700;
+}
+
+.score-table tr.sub td {
+  font-size: 0.78rem;
+  color: var(--muted);
+  border-bottom: none;
+  padding-top: 0.1rem;
+  padding-bottom: 0.15rem;
+}
+
+.score-table tr.sub td:first-child {
+  padding-left: 1.4rem;
+  white-space: nowrap;
+}
+
+.score-table tr.sub .score-track {
+  height: 3px;
+  opacity: 0.55;
+}
+
+.score-table td.native-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 0.9rem;
 }
 
 .table-scroll {

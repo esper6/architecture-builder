@@ -1,20 +1,40 @@
 import type { Tech } from "../data/types";
 import { DIMENSIONS } from "../data/dimensions";
+import { CATEGORY_MAP } from "../data/categories";
 import type { Weights } from "../lib/scoring";
 import { weightedScore } from "../lib/scoring";
+
+function bestClass(count: number, value: number | undefined, best: number) {
+  return `num${count > 1 && value === best ? " best" : ""}`;
+}
 
 /**
  * The table-view twin of the radar — every charted value, readable without
  * color. Best value per dimension is bolded (ties all bold).
+ *
+ * With `showNative` (Compare view, where all techs share a category), the
+ * category's native dimensions render as an extra section. They are display
+ * only — never part of the radar or the weighted score.
  */
 export function ScoreTable({
   techs,
   weights,
+  showNative = false,
 }: {
   techs: Tech[];
   weights: Weights;
+  showNative?: boolean;
 }) {
   if (techs.length === 0) return null;
+
+  const category = CATEGORY_MAP[techs[0].category];
+  const native =
+    showNative &&
+    techs.every((t) => t.category === category.id) &&
+    (category.nativeDimensions ?? []).length > 0
+      ? (category.nativeDimensions ?? [])
+      : [];
+
   return (
     <div className="table-scroll">
       <table className="score-table">
@@ -36,7 +56,7 @@ export function ScoreTable({
                 <td title={d.question}>{d.label}</td>
                 {techs.map((t) => (
                   <td
-                    className={`num${techs.length > 1 && t.scores[d.key] === best ? " best" : ""}`}
+                    className={bestClass(techs.length, t.scores[d.key], best)}
                     key={t.id}
                     title={t.scoreNotes?.[d.key]}
                   >
@@ -55,7 +75,7 @@ export function ScoreTable({
               const best = Math.max(...totals);
               return techs.map((t, i) => (
                 <td
-                  className={`num${techs.length > 1 && totals[i] === best ? " best" : ""}`}
+                  className={bestClass(techs.length, totals[i], best)}
                   key={t.id}
                 >
                   <strong>{totals[i].toFixed(1)}</strong>
@@ -63,6 +83,37 @@ export function ScoreTable({
               ));
             })()}
           </tr>
+          {native.length > 0 && (
+            <tr>
+              <td
+                colSpan={techs.length + 1}
+                className="native-header"
+                title="Axes specific to this layer — shown for depth, not part of the radar or weighted score"
+              >
+                {category.name}-specific dimensions
+              </td>
+            </tr>
+          )}
+          {native.map((nd) => {
+            const values = techs.map((t) => t.nativeScores?.[nd.key]);
+            const best = Math.max(
+              ...values.filter((v): v is number => v !== undefined),
+            );
+            return (
+              <tr key={nd.key}>
+                <td title={nd.question}>{nd.label}</td>
+                {techs.map((t, i) => (
+                  <td
+                    className={bestClass(techs.length, values[i], best)}
+                    key={t.id}
+                    title={t.nativeScoreNotes?.[nd.key]}
+                  >
+                    {values[i] ?? "—"}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

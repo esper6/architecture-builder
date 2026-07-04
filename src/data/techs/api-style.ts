@@ -33,6 +33,15 @@ export const API_STYLE_TECHS: Tech[] = [
       ecosystem:
         "The 10 of this category: every language, gateway, monitoring tool, and hiring pool assumes it.",
     },
+    nativeScores: { cacheability: 10, streaming: 3, contractRigor: 5 },
+    nativeScoreNotes: {
+      cacheability:
+        "HTTP caching semantics (ETags, cache-control, CDNs) are REST's superpower — the web itself is the cache.",
+      streaming:
+        "Request/response at heart; SSE bolts on for one-way push.",
+      contractRigor:
+        "OpenAPI makes contracts possible; culture makes them optional.",
+    },
     strengths: [
       "Universal interoperability — the only style you can hand to an unknown third party without a conversation",
       "HTTP caching is a superpower: ETags, Cache-Control, and CDNs accelerate GETs with zero application code",
@@ -94,6 +103,13 @@ export const API_STYLE_TECHS: Tech[] = [
         "A tale of two teams: consumers fly (self-service queries, no endpoint requests), the server team pays in resolvers, batching, and query-cost policing.",
       opsSimplicity:
         "One endpoint hides wildly variable query cost — you now own depth limits, cost analysis, persisted queries, and per-field tracing.",
+    },
+    nativeScores: { cacheability: 3, streaming: 6, contractRigor: 8 },
+    nativeScoreNotes: {
+      cacheability:
+        "POST-to-one-endpoint defeats HTTP caching; persisted queries and client caches claw some back.",
+      contractRigor:
+        "The schema is mandatory — that's the point.",
     },
     strengths: [
       "Clients self-serve: new views need no new endpoints, mobile stops waiting on backend tickets",
@@ -159,6 +175,13 @@ export const API_STYLE_TECHS: Tech[] = [
       opsSimplicity:
         "Long-lived HTTP/2 connections confuse L4 load balancers (one pod gets everything), and binary payloads defeat curl-and-eyeball debugging — you'll want grpcurl and L7-aware infrastructure.",
     },
+    nativeScores: { cacheability: 4, streaming: 10, contractRigor: 10 },
+    nativeScoreNotes: {
+      streaming:
+        "Unary, server-, client-, and bidirectional streaming are all first-class.",
+      contractRigor:
+        "Proto files plus codegen: the contract IS the artifact.",
+    },
     strengths: [
       "Fastest wire format in the category: binary serialization, HTTP/2 multiplexing, connection reuse",
       "Contract-first discipline: the .proto file is the single source of truth, with well-defined field-numbering rules for safe evolution",
@@ -222,6 +245,13 @@ export const API_STYLE_TECHS: Tech[] = [
       learningEase:
         "Trivial for a TypeScript developer — the '7' discounts for advanced inference errors, which can be genuinely cryptic when something goes wrong deep in a router type.",
     },
+    nativeScores: { cacheability: 5, streaming: 7, contractRigor: 9 },
+    nativeScoreNotes: {
+      cacheability:
+        "GET-mode queries can use HTTP caching, but it isn't the default posture.",
+      contractRigor:
+        "Inferred rather than declared — rigorous inside the monorepo, invisible outside it.",
+    },
     strengths: [
       "Change a server type, watch every affected client call site light up red — refactoring across the stack becomes compile-time safe",
       "No codegen step, no schema file, no OpenAPI drift — the contract is the code",
@@ -280,6 +310,11 @@ export const API_STYLE_TECHS: Tech[] = [
         "WSDL + XSD is a genuinely rigorous machine-validated contract — schema validation catches malformed messages before your code sees them. The tooling around it aged; the idea didn't.",
       maturity:
         "Twenty-five years of production hardening in the most demanding compliance environments. Nothing in this category is more proven.",
+    },
+    nativeScores: { cacheability: 4, streaming: 1, contractRigor: 10 },
+    nativeScoreNotes: {
+      contractRigor:
+        "WSDL + XSD — nothing since has matched the formality, for better and worse.",
     },
     strengths: [
       "WSDL contracts are formal, machine-validated, and generate strongly-typed clients — contract-first before it was cool",
@@ -341,6 +376,13 @@ export const API_STYLE_TECHS: Tech[] = [
         "The wire is untyped frames; there's no standard schema layer, so message contracts are whatever discipline you impose.",
       opsSimplicity:
         "Load balancers, proxies, and serverless platforms all assume short-lived requests — long-lived connections fight idle timeouts, deploys (every restart drops everyone), and autoscaling.",
+    },
+    nativeScores: { cacheability: 1, streaming: 10, contractRigor: 2 },
+    nativeScoreNotes: {
+      cacheability:
+        "A persistent socket is definitionally uncacheable.",
+      contractRigor:
+        "The protocol says nothing about message shapes; any contract is a convention you build and enforce yourself.",
     },
     strengths: [
       "True server push: clients see changes in milliseconds without polling waste",

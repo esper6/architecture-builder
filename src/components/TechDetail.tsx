@@ -58,7 +58,7 @@ export function TechDetail({
         <div className="table-scroll">
           <table className="score-table">
             <tbody>
-              {DIMENSIONS.map((d) => (
+              {DIMENSIONS.map((d) => [
                 <tr key={d.key}>
                   <td style={{ whiteSpace: "nowrap" }} title={d.question}>
                     {d.label}
@@ -75,12 +75,70 @@ export function TechDetail({
                   <td className="score-notes-row">
                     {tech.scoreNotes?.[d.key] ?? ""}
                   </td>
-                </tr>
-              ))}
+                </tr>,
+                ...(tech.subScores?.[d.key] ?? []).map((s) => (
+                  <tr key={`${d.key}-${s.label}`} className="sub">
+                    <td>↳ {s.label}</td>
+                    <td>
+                      <div className="score-track">
+                        <div
+                          className="score-fill sub-fill"
+                          style={{ width: `${s.value * 10}%` }}
+                        />
+                      </div>
+                    </td>
+                    <td className="num">{s.value}</td>
+                    <td className="score-notes-row">{s.note ?? ""}</td>
+                  </tr>
+                )),
+              ])}
             </tbody>
           </table>
         </div>
       </div>
+
+      {(() => {
+        const native = CATEGORY_MAP[tech.category].nativeDimensions ?? [];
+        if (native.length === 0 || !tech.nativeScores) return null;
+        return (
+          <div>
+            <p className="section-label">
+              {CATEGORY_MAP[tech.category].name}-specific dimensions
+            </p>
+            <div className="table-scroll">
+              <table className="score-table">
+                <tbody>
+                  {native.map((nd) => (
+                    <tr key={nd.key}>
+                      <td style={{ whiteSpace: "nowrap" }} title={nd.question}>
+                        {nd.label}
+                      </td>
+                      <td style={{ width: "40%" }}>
+                        <div className="score-track">
+                          <div
+                            className="score-fill"
+                            style={{
+                              width: `${(tech.nativeScores?.[nd.key] ?? 0) * 10}%`,
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="num">{tech.nativeScores?.[nd.key] ?? "—"}</td>
+                      <td className="score-notes-row">
+                        {tech.nativeScoreNotes?.[nd.key] ?? ""}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="small muted" style={{ margin: "0.4rem 0 0" }}>
+              Axes that only make sense for this layer — shown for depth, not
+              part of the radar or weighted rankings.
+            </p>
+          </div>
+        );
+      })()}
 
       <div className="two-col">
         <div className="plus-minus">

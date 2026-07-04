@@ -50,6 +50,23 @@ Anchor examples from the exemplars:
 a different context ("for a large org this is a 8, the 4 is small-team reality").
 2–4 notes per tech is typical.
 
+### Granularity (optional, additive)
+
+Two mechanisms add depth without touching the radar or the weight sliders —
+both render in detail views (and native dimensions in the Compare table):
+
+- **`subScores`** — a drill-down under a shared dimension, answering "why is
+  this a 6?" with numbers (e.g. backend `performance` → Throughput / Startup &
+  cold start / Memory footprint). Same 0–10 within-category relativity. Keep
+  labels identical across all techs in a category so the drill-downs compare.
+- **Category-native dimensions** — axes that only make sense for one layer
+  (databases: Query Flexibility / Consistency Guarantees / Schema Flexibility;
+  API styles: Cacheability / Streaming & Push / Contract Rigor). Define the
+  axes once in `categories.ts` (`nativeDimensions`), score them per tech in
+  `nativeScores` (+ `nativeScoreNotes`). If a category defines native
+  dimensions, EVERY tech in it must score all of them — the audit script
+  enforces this; the compiler can't.
+
 ## Content shape per tech
 
 - 4–5 `strengths`, 3–4 `weaknesses` — concrete, not generic ("famous churn:

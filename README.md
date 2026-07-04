@@ -25,6 +25,7 @@ npm install
 npm run dev        # dev server
 npm run build      # type-check + production build to dist/
 npm run preview    # serve the production build
+npm run audit:data      # knowledge-base integrity + calibration matrix
 node scripts/tour.mjs   # headless end-to-end smoke tour (needs Chrome + `npm run preview` running)
 ```
 
@@ -40,6 +41,11 @@ It's a fully static SPA — `dist/` deploys to any static host or CDN.
   peers in the same category** (ADR-004); relationship edges carry the
   narratives (`alternatives` with when-to-switch notes, `pairsWellWith`,
   `frictionWith`, `notInterchangeableWith`).
+- Granularity beyond the shared eight dimensions: `subScores` (drill-downs
+  like performance → throughput/startup/memory) and per-category
+  `nativeDimensions` (e.g. databases score Query Flexibility, Consistency
+  Guarantees, Schema Flexibility). Both are display-depth only — they never
+  affect the radar or weighted rankings.
 - `docs/authoring-guide.md` — the scoring rubric and voice guide. Read it
   before adding or editing entries; it's what keeps the catalog calibrated.
 
