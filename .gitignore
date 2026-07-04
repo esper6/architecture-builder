@@ -5,3 +5,4 @@ npm-debug.log*
 dist/
 tour-shots/
 .claude/settings.local.json
+tsconfig.tsbuildinfo
