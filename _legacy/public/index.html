@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Architecture Builder — mix &amp; match your stack</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>🏗️ Architecture Builder</h1>
+      <p class="tagline">
+        Pick one technology per layer and see the tradeoffs — cost, performance,
+        scalability, and how well the pieces fit together.
+      </p>
+    </header>
+
+    <main>
+      <section class="picker" id="picker">
+        <!-- categories injected here -->
+      </section>
+
+      <section class="controls">
+        <label for="tier">Traffic / scale:</label>
+        <select id="tier"></select>
+        <button id="reset" type="button">Reset</button>
+      </section>
+
+      <section class="results" id="results" hidden>
+        <div class="results-top">
+          <div class="score-card">
+            <div class="score-number" id="overall">–</div>
+            <div class="score-label">overall fit</div>
+            <div class="score-sub" id="counts"></div>
+          </div>
+          <div class="cost-card">
+            <div class="cost-number" id="cost">–</div>
+            <div class="cost-label">est. monthly infra</div>
+            <div class="cost-sub" id="cost-detail"></div>
+          </div>
+          <div class="chart-card">
+            <canvas id="radar" width="320" height="320"></canvas>
+          </div>
+        </div>
+
+        <div class="notes" id="notes"></div>
+
+        <h2>Your stack</h2>
+        <div class="stack-detail" id="stack-detail"></div>
+      </section>
+
+      <p class="empty" id="empty">Pick at least one technology to see the analysis.</p>
+    </main>
+
+    <footer>
+      <p>
+        Scores are heuristic teaching figures (higher = better on every axis).
+        Cost estimates are rough order-of-magnitude, not quotes.
+      </p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
