@@ -103,6 +103,17 @@ const ADRS: Adr[] = [
     consequences:
       "Any stack satisfying the constraints passes — there are many right answers, which is the point. Catalog changes automatically propagate to challenge difficulty (a risk: a rebalance could make a challenge trivial or impossible, so the audit script should eventually assert each challenge remains solvable).",
   },
+  {
+    id: "ADR-009",
+    title: "One system, one primary choice per layer",
+    status: "Accepted",
+    context:
+      "Real estates are messier than one stack: caches compose (an in-process L1 in front of Redis), persistence goes polyglot (Postgres for transactions, a search engine for search), and a company runs dozens of applications, each with its own stack. Modeling any of that would turn slots into sets — making the compatibility engine combinatorial and turning per-layer scores into meaningless blends.",
+    decision:
+      "The Stack Builder models ONE system, and each slot holds its LOAD-BEARING choice — the technology that shapes that concern's failure modes, obligations, and hiring. Composed secondaries and company-wide portfolios are explicitly out of scope.",
+    consequences:
+      "The constraint is itself the lesson: 'what is our default, and what justifies deviating' is the primary-decision discipline that tech radars enforce at real companies — and two SQL engines inside one app is usually a migration snapshot, not a design. The cost is flattening legitimate compositions (two-tier caching, OLTP + search); the category descriptions carry that nuance instead. Revisit if the app grows saved-stack comparison — a portfolio is just many stacks side by side, and that feature would be the honest way to model 'a company with a ton of apps'.",
+  },
 ];
 
 export function LearnView() {

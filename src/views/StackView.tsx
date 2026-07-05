@@ -225,6 +225,12 @@ export function StackView({
 
       <div className="stack-layout">
         <div className="slot-list">
+          <p className="small muted" style={{ margin: "0 0 0.2rem" }}>
+            One choice per layer, on purpose: this models a <strong>single
+            system's</strong> load-bearing decisions — not a company's whole
+            estate, and not composed secondaries like an L1 cache in front of
+            Redis. Why: ADR-009 on the Learn tab.
+          </p>
           {CATEGORIES.map((c) => {
             const options = techsIn(c.id);
             return (
