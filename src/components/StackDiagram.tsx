@@ -679,7 +679,11 @@ export function StackDiagram({ stack }: { stack: Stack }) {
             markerHeight="7"
             orient="auto-start-reverse"
           >
-            <path d="M 0 0 L 8 4 L 0 8 z" fill="var(--muted)" />
+            <path
+              className="edge-arrow"
+              d="M 0 0 L 8 4 L 0 8 z"
+              fill="var(--muted)"
+            />
           </marker>
         </defs>
 
@@ -708,12 +712,13 @@ export function StackDiagram({ stack }: { stack: Stack }) {
           return (
             <g key={i}>
               <line
+                className="edge-line"
                 x1={x1}
                 y1={y1}
                 x2={x2}
                 y2={y2}
                 stroke="var(--muted)"
-                strokeWidth={1.5}
+                strokeWidth={2}
                 strokeDasharray={e.async ? "5 4" : undefined}
                 markerEnd="url(#arrow)"
               />
@@ -748,10 +753,11 @@ export function StackDiagram({ stack }: { stack: Stack }) {
             <g key={`c${i}`}>
               <title>{c.note}</title>
               <path
+                className="edge-conflict"
                 d={`M ${ax} ${ay} Q ${mx} ${my} ${bx} ${by}`}
                 fill="none"
                 stroke="var(--critical)"
-                strokeWidth={1.5}
+                strokeWidth={2}
                 strokeDasharray={c.blocker ? undefined : "5 4"}
                 opacity={0.8}
               />

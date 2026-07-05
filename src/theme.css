@@ -743,6 +743,20 @@ button {
   max-height: 460px;
 }
 
+/* Edge colors live in CSS (not only SVG presentation attributes) so theme
+   rewriters (Dark Reader, forced-colors) don't strip them to stroke:none. */
+.stack-diagram .edge-line {
+  stroke: var(--muted);
+}
+
+.stack-diagram .edge-arrow {
+  fill: var(--muted);
+}
+
+.stack-diagram .edge-conflict {
+  stroke: var(--critical);
+}
+
 .diagram-legend {
   margin: 0.5rem 0 0;
   text-align: center;
