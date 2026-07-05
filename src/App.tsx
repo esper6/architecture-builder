@@ -43,7 +43,7 @@ export default function App() {
     "ab.challenge",
     null,
   );
-  const [theme, setTheme] = usePersistentState<ThemeChoice>("ab.theme", "system");
+  const [theme, setTheme] = usePersistentState<ThemeChoice>("ab.theme", "dark");
 
   useEffect(() => {
     if (theme === "system") delete document.documentElement.dataset.theme;
