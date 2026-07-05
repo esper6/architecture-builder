@@ -4,8 +4,22 @@ import { CATEGORY_MAP } from "../data/categories";
 import type { Weights } from "../lib/scoring";
 import { weightedScore } from "../lib/scoring";
 
-function bestClass(count: number, value: number | undefined, best: number) {
-  return `num${count > 1 && value === best ? " best" : ""}`;
+function isBest(count: number, value: number | undefined, best: number) {
+  return count > 1 && value !== undefined && value === best;
+}
+
+/** Winning value rendered as a filled pill — marked by shape, not color alone. */
+function Value({
+  value,
+  best,
+  strong = false,
+}: {
+  value: number | string;
+  best: boolean;
+  strong?: boolean;
+}) {
+  const text = strong ? <strong>{value}</strong> : value;
+  return best ? <span className="win-pill">{text}</span> : <>{text}</>;
 }
 
 /**
@@ -55,12 +69,11 @@ export function ScoreTable({
               <tr key={d.key}>
                 <td title={d.question}>{d.label}</td>
                 {techs.map((t) => (
-                  <td
-                    className={bestClass(techs.length, t.scores[d.key], best)}
-                    key={t.id}
-                    title={t.scoreNotes?.[d.key]}
-                  >
-                    {t.scores[d.key]}
+                  <td className="num" key={t.id} title={t.scoreNotes?.[d.key]}>
+                    <Value
+                      value={t.scores[d.key]}
+                      best={isBest(techs.length, t.scores[d.key], best)}
+                    />
                   </td>
                 ))}
               </tr>
@@ -74,11 +87,12 @@ export function ScoreTable({
               const totals = techs.map((t) => weightedScore(t, weights));
               const best = Math.max(...totals);
               return techs.map((t, i) => (
-                <td
-                  className={bestClass(techs.length, totals[i], best)}
-                  key={t.id}
-                >
-                  <strong>{totals[i].toFixed(1)}</strong>
+                <td className="num" key={t.id}>
+                  <Value
+                    value={totals[i].toFixed(1)}
+                    best={isBest(techs.length, totals[i], best)}
+                    strong
+                  />
                 </td>
               ));
             })()}
@@ -104,11 +118,14 @@ export function ScoreTable({
                 <td title={nd.question}>{nd.label}</td>
                 {techs.map((t, i) => (
                   <td
-                    className={bestClass(techs.length, values[i], best)}
+                    className="num"
                     key={t.id}
                     title={t.nativeScoreNotes?.[nd.key]}
                   >
-                    {values[i] ?? "—"}
+                    <Value
+                      value={values[i] ?? "—"}
+                      best={isBest(techs.length, values[i], best)}
+                    />
                   </td>
                 ))}
               </tr>

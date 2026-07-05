@@ -417,9 +417,18 @@ button {
   font-weight: 600;
 }
 
-.score-table .best {
+/* Winning value in a comparison — a filled pill, so the mark is a shape,
+   not color alone. Ties are all marked (they genuinely tied). */
+.win-pill {
+  display: inline-block;
+  min-width: 1.9em;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--good) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--good) 45%, transparent);
   color: var(--good-text);
   font-weight: 700;
+  text-align: center;
 }
 
 .score-table tr.sub td {
