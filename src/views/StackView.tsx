@@ -19,6 +19,7 @@ import { evaluateChallenge } from "../lib/challenge";
 import { ChartLegend, RadarChart } from "../components/RadarChart";
 import { ScoreTable } from "../components/ScoreTable";
 import { EffortBadge } from "../components/EffortBadge";
+import { StackDiagram } from "../components/StackDiagram";
 
 /** Curated example stacks — each one is a coherent, real-world archetype. */
 const EXAMPLE_STACKS: { name: string; blurb: string; stack: Stack }[] = [
@@ -274,6 +275,15 @@ export function StackView({
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {hasTechs && (
+            <div className="card">
+              <p className="section-label">
+                System blueprint — the shape your choices make
+              </p>
+              <StackDiagram stack={stack} />
+            </div>
+          )}
+
           <div className="card">
             <div className="stack-score-row">
               <span className="hero-number">

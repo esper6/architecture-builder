@@ -737,6 +737,17 @@ button {
   border-top: 1px solid var(--grid);
 }
 
+/* ---------- Stack diagram ---------- */
+
+.stack-diagram svg {
+  max-height: 460px;
+}
+
+.diagram-legend {
+  margin: 0.5rem 0 0;
+  text-align: center;
+}
+
 /* ---------- Challenges ---------- */
 
 .challenge-grid {
