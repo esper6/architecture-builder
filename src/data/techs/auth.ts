@@ -60,10 +60,12 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "session-auth",
         note: "For a single browser-facing app, sessions give instant revocation and fewer footguns — statelessness you don't need is complexity you don't need.",
+        effort: "moderate",
       },
       {
         techId: "managed-idp",
         note: "Not a swap but a completion: let a provider own issuance, MFA, and refresh choreography while your services just verify the JWTs.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -78,6 +80,20 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "managed-idp",
         note: "'We use JWT' and 'we use Auth0/Entra' answer different questions. JWT is a token format; an IdP is the system that authenticates users and ISSUES those tokens. Choosing JWT tells you nothing about who verifies passwords, runs MFA, or handles resets — you still owe that answer.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now need a token revocation story before the first compromised account",
+        why: "A stateless token can't be recalled; short TTLs plus refresh rotation is the standard answer, and someone must build it.",
+      },
+      {
+        need: "You now own signing-key custody and rotation",
+        why: "A leaked key forges everyone's identity, and rotating without invalidating every live session takes key IDs and overlap windows — machinery that must exist before the incident, not after.",
+      },
+      {
+        need: "You now own token-storage guidance for every client type",
+        why: "localStorage is XSS-readable, cookies reintroduce CSRF, mobile has its own keychain rules — each client platform needs a documented, enforced answer, forever.",
       },
     ],
     tags: ["stateless", "tokens", "api-auth"],
@@ -132,10 +148,12 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "jwt-auth",
         note: "Switch when the architecture goes multi-service or the clients stop being browsers — that's when statelessness starts paying for its complexity.",
+        effort: "moderate",
       },
       {
         techId: "managed-idp",
         note: "Orthogonal, not competing: an IdP can authenticate the user while your app still keeps a plain session cookie afterward — a common and underrated combination.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -150,6 +168,20 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "jwt-auth",
         note: "Not old-vs-new — a different placement of state. Sessions keep state on the server and get instant revocation; JWTs push state to the client and get horizontal freedom. 'JWT because it's modern' trades away revocation for a scaling property single-app systems don't need.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now run the session store as login-critical infrastructure",
+        why: "The moment a second instance exists, Redis or the session table IS authentication — its outage logs everyone out, so it inherits your app's availability target.",
+      },
+      {
+        need: "You now own CSRF defenses as permanent homework",
+        why: "Cookies are sent automatically, which is the convenience and the attack; SameSite covers most of it, but every state-changing endpoint stays in scope for review, forever.",
+      },
+      {
+        need: "You now own session lifecycle policy",
+        why: "Idle timeouts, absolute lifetimes, concurrent-session limits, and ID regeneration on login are decisions nobody made in the tutorial — and auditors will ask for all of them.",
       },
     ],
     tags: ["default-choice", "server-state", "browser"],
@@ -208,10 +240,12 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "self-hosted-idp",
         note: "Same protocols, opposite ownership: escape MAU pricing and keep data sovereignty by operating the identity service yourself.",
+        effort: "moderate",
       },
       {
         techId: "session-auth",
         note: "A single internal app with simple needs can skip the IdP entirely — framework sessions plus solid password hashing is legitimate at small scale.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -223,6 +257,24 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "jwt-auth",
         note: "A provider versus a token format. The IdP authenticates humans, stores credentials, runs MFA, and ISSUES JWTs; 'JWT auth' is how your services consume the result. Teams saying 'we don't need Auth0, we use JWT' have confused the receipt for the store.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now manage a vendor relationship in your most critical path",
+        why: "Their outages, deprecation notices, and breaking SDK migrations arrive on their schedule — someone must read the changelog, test the upgrades, and own the renewal negotiation.",
+      },
+      {
+        need: "You now track MAU cost as a growth metric, not a footnote",
+        why: "Per-user pricing cliffs exactly when the product succeeds — if nobody models the 10x-users invoice before signing, the migration conversation happens under duress.",
+      },
+      {
+        need: "You now treat tenant configuration as code",
+        why: "Rules, claim mappings, and console settings ARE your auth behavior; left as click-ops they become unversioned, unreviewable production config that one admin understands.",
+      },
+      {
+        need: "You now keep OIDC expertise in-house anyway",
+        why: "Outsourcing identity doesn't outsource understanding it — flows, scopes, audiences, and the provider's quirks still need a resident expert when login breaks at 9 AM Monday.",
       },
     ],
     tags: ["buy-not-build", "oidc", "managed"],
@@ -280,10 +332,12 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "managed-idp",
         note: "Same protocols, no pager: the default unless sovereignty, scale economics, or customization genuinely forces self-hosting.",
+        effort: "moderate",
       },
       {
         techId: "session-auth",
         note: "If you're self-hosting an IdP just to serve one application, framework sessions may be the honest answer — an IdP earns its keep across many apps.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -295,6 +349,24 @@ export const AUTH_TECHS: Tech[] = [
       {
         techId: "managed-idp",
         note: "Same protocols, different question: not 'which product' but 'who operates the security-critical service'. Choosing between them on features misses it — you're choosing between a vendor bill and an operational responsibility that never ends.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now patch a security-critical service on someone else's schedule",
+        why: "An IdP CVE is a drop-everything event — deferral is not an option like it is for app dependencies.",
+      },
+      {
+        need: "You now run high availability for the door to everything",
+        why: "IdP downtime locks every user out of every app behind it — clustering, session replication, and rehearsed failover are entry stakes, not maturity goals.",
+      },
+      {
+        need: "You now staff and retain a niche specialty",
+        why: "Realm models, upgrade paths, and clustering quirks are a discipline of their own — when the one engineer who knows your Keycloak leaves, the risk walks out with them.",
+      },
+      {
+        need: "You now guard the credential database like the crown jewels it is",
+        why: "Backups, restore drills, and encryption for the identity store are yours — losing it means every user resets, and leaking it is the company-ending headline.",
       },
     ],
     tags: ["sovereignty", "oidc", "self-operated"],

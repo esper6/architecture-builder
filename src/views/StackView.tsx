@@ -1,16 +1,24 @@
 import { useMemo, useState } from "react";
-import type { TechId } from "../data/types";
+import type { OrgContext, TechId } from "../data/types";
 import { CATEGORIES } from "../data/categories";
-import { DIMENSION_MAP } from "../data/dimensions";
+import { DIMENSION_MAP, DIMENSIONS } from "../data/dimensions";
+import { SCENARIO_MAP } from "../data/scenarios";
+import { describeContext } from "../data/context";
+import type { Challenge } from "../data/challenges";
 import { getTech, techsIn } from "../data";
 import type { Stack, Weights } from "../lib/scoring";
 import {
+  AGGREGATION,
+  STRESS_EVENTS,
   analyzeStack,
   ecosystemName,
-  stackToMarkdown,
+  stressTest,
 } from "../lib/scoring";
+import { stackToAdr } from "../lib/export";
+import { evaluateChallenge } from "../lib/challenge";
 import { ChartLegend, RadarChart } from "../components/RadarChart";
 import { ScoreTable } from "../components/ScoreTable";
+import { EffortBadge } from "../components/EffortBadge";
 
 /** Curated example stacks — each one is a coherent, real-world archetype. */
 const EXAMPLE_STACKS: { name: string; blurb: string; stack: Stack }[] = [
@@ -91,16 +99,39 @@ const EXAMPLE_STACKS: { name: string; blurb: string; stack: Stack }[] = [
 export function StackView({
   weights,
   scenarioName,
+  ctx,
   stack,
   onStackChange,
+  activeChallenge,
+  onAbandonChallenge,
 }: {
   weights: Weights;
   scenarioName: string;
+  ctx: OrgContext;
   stack: Stack;
   onStackChange: (stack: Stack) => void;
+  activeChallenge: Challenge | null;
+  onAbandonChallenge: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const analysis = useMemo(() => analyzeStack(stack, weights), [stack, weights]);
+
+  // A live challenge pins weights and context so its scoring is deterministic
+  // regardless of what's dialed in elsewhere in the app.
+  const effWeights = activeChallenge
+    ? SCENARIO_MAP[activeChallenge.scenarioId].weights
+    : weights;
+  const effCtx = activeChallenge ? activeChallenge.context : ctx;
+  const effScenarioName = activeChallenge
+    ? SCENARIO_MAP[activeChallenge.scenarioId].name
+    : scenarioName;
+
+  const analysis = useMemo(
+    () => analyzeStack(stack, effWeights, effCtx),
+    [stack, effWeights, effCtx],
+  );
+  const challengeResult = activeChallenge
+    ? evaluateChallenge(activeChallenge, analysis)
+    : null;
 
   const backendId = stack.backend;
   const backendEco = backendId ? getTech(backendId).ecosystem : undefined;
@@ -112,9 +143,9 @@ export function StackView({
     onStackChange(next);
   }
 
-  async function copyMarkdown() {
+  async function copyAdr() {
     await navigator.clipboard.writeText(
-      stackToMarkdown(stack, weights, scenarioName),
+      stackToAdr(stack, effWeights, effCtx, effScenarioName),
     );
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
@@ -123,27 +154,73 @@ export function StackView({
   const blockers = analysis.notes.filter((n) => n.kind === "blocker");
   const warnings = analysis.notes.filter((n) => n.kind === "warning");
   const synergies = analysis.notes.filter((n) => n.kind === "synergy");
+  const hasTechs = analysis.techs.length > 0;
+  const floorDims = DIMENSIONS.filter((d) => AGGREGATION[d.key] === "floor");
+  const gap = analysis.naiveOverall - analysis.overall;
 
   return (
     <div>
-      <div style={{ marginTop: "1rem" }}>
-        <p className="section-label">Start from an archetype (or build from scratch)</p>
-        <div className="chip-row">
-          {EXAMPLE_STACKS.map((ex) => (
-            <button
-              key={ex.name}
-              className="chip"
-              title={ex.blurb}
-              onClick={() => onStackChange({ ...ex.stack })}
-            >
-              {ex.name}
+      {activeChallenge && challengeResult && (
+        <div
+          className={`card challenge-banner${challengeResult.passed ? " passed" : ""}`}
+          style={{ marginTop: "1rem" }}
+        >
+          <div className="challenge-banner-head">
+            <div>
+              <p className="section-label">
+                Challenge {challengeResult.passed ? "— PASSED ✓" : "in progress"}
+              </p>
+              <h3 style={{ margin: 0 }}>{activeChallenge.name}</h3>
+              <p className="small secondary" style={{ margin: "0.3rem 0 0" }}>
+                {activeChallenge.brief}
+              </p>
+              <p className="small muted" style={{ margin: "0.3rem 0 0" }}>
+                Scored under locked <strong>{effScenarioName}</strong> weights ·{" "}
+                {describeContext(effCtx)}
+              </p>
+            </div>
+            <button className="chip" onClick={onAbandonChallenge}>
+              Abandon
             </button>
-          ))}
-          <button className="chip" onClick={() => onStackChange({})}>
-            Clear all
-          </button>
+          </div>
+          <ul className="criteria-list">
+            {challengeResult.criteria.map((c, i) => (
+              <li key={i} className={c.pass ? "pass" : "fail"}>
+                {c.pass ? "✓" : "✗"} {c.label}
+              </li>
+            ))}
+          </ul>
+          <details>
+            <summary className="small muted">Need a hint?</summary>
+            <p className="small secondary" style={{ margin: "0.4rem 0 0" }}>
+              {activeChallenge.hint}
+            </p>
+          </details>
         </div>
-      </div>
+      )}
+
+      {!activeChallenge && (
+        <div style={{ marginTop: "1rem" }}>
+          <p className="section-label">
+            Start from an archetype (or build from scratch)
+          </p>
+          <div className="chip-row">
+            {EXAMPLE_STACKS.map((ex) => (
+              <button
+                key={ex.name}
+                className="chip"
+                title={ex.blurb}
+                onClick={() => onStackChange({ ...ex.stack })}
+              >
+                {ex.name}
+              </button>
+            ))}
+            <button className="chip" onClick={() => onStackChange({})}>
+              Clear all
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="stack-layout">
         <div className="slot-list">
@@ -200,25 +277,54 @@ export function StackView({
           <div className="card">
             <div className="stack-score-row">
               <span className="hero-number">
-                {analysis.techs.length ? analysis.overall.toFixed(1) : "—"}
+                {hasTechs ? analysis.overall.toFixed(1) : "—"}
               </span>
               <span className="secondary">
-                / 10 fit for <strong>{scenarioName}</strong> priorities ·{" "}
-                {analysis.techs.length} layer
-                {analysis.techs.length === 1 ? "" : "s"} chosen
+                / 10 <strong>emergent</strong> fit for{" "}
+                <strong>{effScenarioName}</strong> priorities
+                {hasTechs && gap > 0.05 && (
+                  <>
+                    {" "}
+                    — naive averaging would claim{" "}
+                    <strong>{analysis.naiveOverall.toFixed(1)}</strong>; the
+                    gap is your weakest links
+                  </>
+                )}
               </span>
               <button
                 className="chip"
                 style={{ marginLeft: "auto" }}
-                onClick={copyMarkdown}
-                disabled={analysis.techs.length === 0}
+                onClick={copyAdr}
+                disabled={!hasTechs}
               >
-                {copied ? "Copied ✓" : "Copy as Markdown"}
+                {copied ? "Copied ✓" : "Copy as ADR draft"}
               </button>
             </div>
+            {hasTechs && (
+              <div className="floor-row">
+                {floorDims.map((d) => {
+                  const culprit = analysis.culprits[d.key];
+                  return (
+                    <span
+                      key={d.key}
+                      className="floor-chip"
+                      title={`${d.label}: the stack is only as good as its weakest layer here${culprit ? ` — currently ${culprit.name}` : ""}`}
+                    >
+                      {d.label.replace(" & ", "/")} floor{" "}
+                      <strong>{analysis.emergentProfile[d.key].toFixed(0)}</strong>
+                      {culprit && (
+                        <span className="muted"> · {culprit.name}</span>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
             <p className="small muted" style={{ margin: "0.5rem 0 0" }}>
-              Scores are within-layer relative, so this number compares stack
-              variants against each other — it is not an absolute grade.
+              Floors, not averages: ops load, type safety, performance,
+              scalability, and maturity are set by your weakest layer — your
+              pager doesn't compute means. Scores are within-layer relative and
+              adjusted for your org context.
             </p>
           </div>
 
@@ -248,40 +354,119 @@ export function StackView({
             </div>
           )}
 
-          {analysis.techs.length > 0 && (
+          {hasTechs && (
             <div className="card">
               <p className="section-label">
-                Stack profile (average across chosen layers)
+                Average vs emergent — the systems-thinking gap
               </p>
-              <RadarChart
+              <ChartLegend
                 series={[
                   {
-                    id: "stack",
-                    name: "Your stack",
+                    id: "avg",
+                    name: "Simple average (what a spreadsheet claims)",
+                    color: "var(--muted)",
+                  },
+                  {
+                    id: "emergent",
+                    name: "Emergent (weakest link sets floors)",
                     color: "var(--series-1)",
-                    values: analysis.profile,
                   },
                 ]}
               />
-              <ChartLegend
+              <RadarChart
                 series={[
-                  { id: "stack", name: "Your stack", color: "var(--series-1)" },
+                  {
+                    id: "avg",
+                    name: "Simple average",
+                    color: "var(--muted)",
+                    values: analysis.averageProfile,
+                  },
+                  {
+                    id: "emergent",
+                    name: "Emergent",
+                    color: "var(--series-1)",
+                    values: analysis.emergentProfile,
+                  },
                 ]}
               />
-              <ScoreTable techs={analysis.techs} weights={weights} />
-              <p className="small muted" style={{ marginTop: "0.5rem" }}>
-                Weakest dimension:{" "}
-                <strong>
-                  {
-                    DIMENSION_MAP[
-                      Object.entries(analysis.profile).sort(
-                        (a, b) => a[1] - b[1],
-                      )[0][0] as keyof typeof DIMENSION_MAP
-                    ].label
-                  }
-                </strong>{" "}
-                — the table shows which layer drags it down.
+              <ScoreTable techs={analysis.techs} weights={effWeights} ctx={effCtx} />
+            </div>
+          )}
+
+          {hasTechs && (
+            <div className="card">
+              <p className="section-label">
+                Stress lens — the same stack, eighteen months later
               </p>
+              <div className="stress-list">
+                {STRESS_EVENTS.map((ev) => {
+                  const cracks = stressTest(analysis, ev);
+                  return (
+                    <div className="stress-event" key={ev.id}>
+                      <div className="stress-head">
+                        <strong>{ev.name}</strong>
+                        <span
+                          className={`stress-verdict ${cracks.length ? "cracks" : "absorbs"}`}
+                        >
+                          {cracks.length
+                            ? `${cracks.length} crack${cracks.length > 1 ? "s" : ""}`
+                            : "absorbs"}
+                        </span>
+                      </div>
+                      <p className="small muted" style={{ margin: "0.15rem 0 0.35rem" }}>
+                        {ev.description}
+                      </p>
+                      {cracks.map((c, i) => (
+                        <div className="stress-crack" key={i}>
+                          <span>
+                            <strong>{c.tech.name}</strong> —{" "}
+                            {DIMENSION_MAP[c.dim].label.toLowerCase()} {c.score}
+                          </span>
+                          {c.exits.length > 0 && (
+                            <span className="small secondary">
+                              exits:{" "}
+                              {c.exits.map((x, j) => (
+                                <span key={x.techId}>
+                                  {j > 0 && ", "}
+                                  {getTech(x.techId).name}{" "}
+                                  <EffortBadge effort={x.effort} />
+                                </span>
+                              ))}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {hasTechs && analysis.commitments.length > 0 && (
+            <div className="card">
+              <p className="section-label">
+                The obligations ledger — what this stack signs you up for
+              </p>
+              <p className="small muted" style={{ margin: "0 0 0.6rem" }}>
+                Second-order costs that appear on no feature list. Seniors
+                carry this list in their heads; now it's on the table.
+              </p>
+              <div className="ledger">
+                {analysis.commitments.map(({ tech, items }) => (
+                  <div className="ledger-group" key={tech.id}>
+                    <p className="ledger-tech">{tech.name}</p>
+                    <ul>
+                      {items.map((c, i) => (
+                        <li key={i}>
+                          <strong>{c.need}</strong>
+                          <span className="muted"> — {c.why}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

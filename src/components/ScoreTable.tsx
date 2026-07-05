@@ -1,8 +1,8 @@
-import type { Tech } from "../data/types";
+import type { OrgContext, Tech } from "../data/types";
 import { DIMENSIONS } from "../data/dimensions";
 import { CATEGORY_MAP } from "../data/categories";
 import type { Weights } from "../lib/scoring";
-import { weightedScore } from "../lib/scoring";
+import { effective, weightedOf } from "../lib/scoring";
 
 function isBest(count: number, value: number | undefined, best: number) {
   return count > 1 && value !== undefined && value === best;
@@ -33,14 +33,20 @@ function Value({
 export function ScoreTable({
   techs,
   weights,
+  ctx,
   showNative = false,
 }: {
   techs: Tech[];
   weights: Weights;
+  /** When provided, cells show context-adjusted scores (marked with °). */
+  ctx?: OrgContext;
   showNative?: boolean;
 }) {
   if (techs.length === 0) return null;
 
+  const effs = techs.map((t) =>
+    ctx ? effective(t, ctx) : { tech: t, scores: t.scores, applied: [] },
+  );
   const category = CATEGORY_MAP[techs[0].category];
   const native =
     showNative &&
@@ -64,18 +70,33 @@ export function ScoreTable({
         </thead>
         <tbody>
           {DIMENSIONS.map((d) => {
-            const best = Math.max(...techs.map((t) => t.scores[d.key]));
+            const best = Math.max(...effs.map((e) => e.scores[d.key]));
             return (
               <tr key={d.key}>
                 <td title={d.question}>{d.label}</td>
-                {techs.map((t) => (
-                  <td className="num" key={t.id} title={t.scoreNotes?.[d.key]}>
-                    <Value
-                      value={t.scores[d.key]}
-                      best={isBest(techs.length, t.scores[d.key], best)}
-                    />
-                  </td>
-                ))}
+                {effs.map((e) => {
+                  const adjusted = e.scores[d.key] !== e.tech.scores[d.key];
+                  const whys = e.applied
+                    .filter((m) => m.delta[d.key])
+                    .map((m) => m.why)
+                    .join(" ");
+                  return (
+                    <td
+                      className="num"
+                      key={e.tech.id}
+                      title={
+                        adjusted
+                          ? `Base ${e.tech.scores[d.key]}, adjusted for your org context: ${whys}`
+                          : e.tech.scoreNotes?.[d.key]
+                      }
+                    >
+                      <Value
+                        value={adjusted ? `${e.scores[d.key]}°` : e.scores[d.key]}
+                        best={isBest(techs.length, e.scores[d.key], best)}
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}
@@ -84,10 +105,10 @@ export function ScoreTable({
               <strong>Weighted score</strong>
             </td>
             {(() => {
-              const totals = techs.map((t) => weightedScore(t, weights));
+              const totals = effs.map((e) => weightedOf(e.scores, weights));
               const best = Math.max(...totals);
-              return techs.map((t, i) => (
-                <td className="num" key={t.id}>
+              return effs.map((e, i) => (
+                <td className="num" key={e.tech.id}>
                   <Value
                     value={totals[i].toFixed(1)}
                     best={isBest(techs.length, totals[i], best)}

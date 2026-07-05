@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import type { CategoryId, Tech, TechId } from "../data/types";
+import type { CategoryId, OrgContext, TechId } from "../data/types";
 import { CATEGORIES, CATEGORY_MAP } from "../data/categories";
 import { getTech, techsIn } from "../data";
 import type { Weights } from "../lib/scoring";
-import { weightedScore } from "../lib/scoring";
+import { effective, weightedOf } from "../lib/scoring";
 import { ChartLegend, RadarChart } from "../components/RadarChart";
 import { ScoreTable } from "../components/ScoreTable";
 import { TechDetail } from "../components/TechDetail";
@@ -19,31 +19,56 @@ const SERIES_VARS = [
  *  deselected — color follows the entity, never its rank. */
 type Slots = (TechId | null)[];
 
-function defaultSlots(category: CategoryId, weights: Weights): Slots {
+function defaultSlots(
+  category: CategoryId,
+  weights: Weights,
+  ctx: OrgContext,
+): Slots {
   const ranked = [...techsIn(category)].sort(
-    (a, b) => weightedScore(b, weights) - weightedScore(a, weights),
+    (a, b) =>
+      weightedOf(effective(b, ctx).scores, weights) -
+      weightedOf(effective(a, ctx).scores, weights),
   );
   return [ranked[0]?.id ?? null, ranked[1]?.id ?? null, null, null];
 }
 
-export function CompareView({ weights }: { weights: Weights }) {
+export function CompareView({
+  weights,
+  ctx,
+}: {
+  weights: Weights;
+  ctx: OrgContext;
+}) {
   const [category, setCategory] = useState<CategoryId>("architecture");
   const [slots, setSlots] = useState<Slots>(() =>
-    defaultSlots("architecture", weights),
+    defaultSlots("architecture", weights, ctx),
   );
   const [detailId, setDetailId] = useState<TechId | null>(null);
 
   const ranked = useMemo(
     () =>
       [...techsIn(category)]
-        .map((t) => ({ tech: t, score: weightedScore(t, weights) }))
+        .map((t) => {
+          const eff = effective(t, ctx);
+          const score = weightedOf(eff.scores, weights);
+          return {
+            tech: t,
+            eff,
+            score,
+            delta: score - weightedOf(t.scores, weights),
+          };
+        })
         .sort((a, b) => b.score - a.score),
-    [category, weights],
+    [category, weights, ctx],
   );
 
-  const compared: { tech: Tech; color: string }[] = slots
+  const compared = slots
     .flatMap((id, i) => (id === null ? [] : [{ id, color: SERIES_VARS[i] }]))
-    .map((s) => ({ tech: getTech(s.id), color: s.color }));
+    .map((s) => ({
+      tech: getTech(s.id),
+      eff: effective(getTech(s.id), ctx),
+      color: s.color,
+    }));
 
   function toggle(id: TechId) {
     setSlots((prev) => {
@@ -63,7 +88,7 @@ export function CompareView({ weights }: { weights: Weights }) {
 
   function changeCategory(id: CategoryId) {
     setCategory(id);
-    setSlots(defaultSlots(id, weights));
+    setSlots(defaultSlots(id, weights, ctx));
     setDetailId(null);
   }
 
@@ -72,7 +97,7 @@ export function CompareView({ weights }: { weights: Weights }) {
     const target = getTech(id);
     if (target.category !== category) {
       setCategory(target.category);
-      const base = defaultSlots(target.category, weights);
+      const base = defaultSlots(target.category, weights, ctx);
       const free = base.findIndex((s) => s === null);
       if (!base.includes(id) && free !== -1) base[free] = id;
       setSlots(base);
@@ -117,7 +142,7 @@ export function CompareView({ weights }: { weights: Weights }) {
             Ranked by your priorities — select up to 4 to compare
           </p>
           <div className="rank-list">
-            {ranked.map(({ tech, score }) => {
+            {ranked.map(({ tech, eff, score, delta }) => {
               const slotIndex = slots.indexOf(tech.id);
               const selected = slotIndex !== -1;
               return (
@@ -137,7 +162,17 @@ export function CompareView({ weights }: { weights: Weights }) {
                     }}
                   />
                   <span style={{ minWidth: 0 }}>
-                    <span className="name">{tech.name}</span>
+                    <span className="name">
+                      {tech.name}
+                      {Math.abs(delta) > 0.001 && (
+                        <span
+                          className={`ctx-delta ${delta > 0 ? "up" : "down"}`}
+                          title={`Adjusted for your org context: ${eff.applied.map((m) => m.why).join(" ")}`}
+                        >
+                          {delta > 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}
+                        </span>
+                      )}
+                    </span>
                     <span className="tagline">{tech.tagline}</span>
                   </span>
                   <span className="rank-score">{score.toFixed(1)}</span>
@@ -172,16 +207,17 @@ export function CompareView({ weights }: { weights: Weights }) {
                   }))}
                 />
                 <RadarChart
-                  series={compared.map(({ tech, color }) => ({
+                  series={compared.map(({ tech, eff, color }) => ({
                     id: tech.id,
                     name: tech.name,
                     color,
-                    values: tech.scores,
+                    values: eff.scores,
                   }))}
                 />
                 <ScoreTable
                   techs={compared.map((c) => c.tech)}
                   weights={weights}
+                  ctx={ctx}
                   showNative
                 />
               </>
@@ -190,7 +226,7 @@ export function CompareView({ weights }: { weights: Weights }) {
 
           <div className="card">
             {detail ? (
-              <TechDetail tech={detail} onNavigate={focusOn} />
+              <TechDetail tech={detail} ctx={ctx} onNavigate={focusOn} />
             ) : (
               <p className="muted" style={{ margin: 0 }}>
                 Open a technology's full profile — strengths, weaknesses, when

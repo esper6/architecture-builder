@@ -162,11 +162,28 @@ export type TechId =
   | "vms"
   | "static-edge";
 
+/** How much work swapping to an alternative really is. */
+export type MigrationEffort = "drop-in" | "moderate" | "rewrite";
+
 /** A related-technology edge with the narrative that makes it educational. */
 export interface Relation {
   techId: TechId;
   /** One or two sentences: when you'd switch / why they pair / why they clash. */
   note: string;
+  /** For `alternatives` edges: the realistic cost of actually switching. */
+  effort?: MigrationEffort;
+}
+
+/**
+ * A second-order obligation a technology signs you up for — the ongoing
+ * infrastructure, process, or skill commitments that don't appear on any
+ * feature list but dominate total cost of ownership.
+ */
+export interface Commitment {
+  /** The obligation, phrased as "You now own/need …". */
+  need: string;
+  /** Why this tech creates it. */
+  why: string;
 }
 
 export interface Tech {
@@ -218,7 +235,40 @@ export interface Tech {
    * The note explains why they solve different problems.
    */
   notInterchangeableWith?: Relation[];
+  /** What choosing this signs you up for — the obligations ledger. */
+  commitments?: Commitment[];
   tags?: string[];
+}
+
+/* ---------- Org context (Conway's Law, made mechanical) ---------- */
+
+export type TeamSize = "small" | "mid" | "large";
+
+/** The org-shaped inputs that flip technology scores. */
+export interface OrgContext {
+  /** small ≤10 devs · mid 10–30 · large 30+ */
+  teamSize: TeamSize;
+  /** Is there a platform/infra team paving roads for product teams? */
+  platformTeam: boolean;
+  /** Formal compliance regime (SOC 2, financial, healthcare…)? */
+  compliance: boolean;
+}
+
+/**
+ * A visible, explained score adjustment triggered by org context.
+ * All specified conditions must match for the modifier to apply.
+ * This is deliberately data, not a model — every adjustment carries its "why"
+ * and is shown in the UI (see ADR-006).
+ */
+export interface ContextModifier {
+  techId: TechId;
+  when: Partial<{
+    teamSize: TeamSize[];
+    platformTeam: boolean;
+    compliance: boolean;
+  }>;
+  delta: Partial<Record<DimensionKey, number>>;
+  why: string;
 }
 
 /** A weighting profile representing project priorities. Weights multiply scores. */

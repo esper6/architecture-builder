@@ -67,20 +67,37 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "spring-boot",
         note: "The JVM twin: same batteries-included, DI-centric enterprise philosophy. Choose by which ecosystem your org already lives in — switching between them buys little.",
+        effort: "rewrite",
       },
       {
         techId: "nestjs",
         note: "Delivers a similar structured, DI-driven experience in TypeScript — for teams that want ASP.NET's shape but Node's ecosystem and hiring.",
+        effort: "rewrite",
       },
       {
         techId: "go-http",
         note: "When deploy footprint and cold-start latency start to dominate — a single static binary beats a runtime, at the cost of the framework and ORM comforts.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
       { techId: "ef-core", note: "Designed together, versioned together — migrations, LINQ, and change tracking with zero impedance against the framework." },
       { techId: "mssql", note: "The all-Microsoft data path: best-in-class tooling integration, and EF Core's SQL Server provider is its most exercised." },
       { techId: "blazor", note: "One language and shared models from database to browser — the whole-stack consolidation play for .NET teams." },
+    ],
+    commitments: [
+      {
+        need: "You now track the .NET release cadence — yearly majors with LTS windows the org must actually observe",
+        why: "Running an out-of-support runtime is a compliance finding, not a preference; upgrades are usually smooth but never optional.",
+      },
+      {
+        need: "You now own DI-lifetime and middleware-pipeline expertise as core team knowledge",
+        why: "A captive dependency or misordered middleware fails subtly at runtime — the framework's coherence assumes someone knows its lifecycle cold.",
+      },
+      {
+        need: "You now must stay on the idiomatic Microsoft path to keep the coherence you're paying for",
+        why: "Swapping in foreign DI containers or ORMs fights the first-party integration at every seam — the one-vendor dividend evaporates the moment you go off-road.",
+      },
     ],
     tags: ["batteries-included", "enterprise", "one-vendor"],
   },
@@ -144,18 +161,22 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "fastify",
         note: "The same minimalist model, rebuilt modern: faster, schema-first validation, real TypeScript support. The default upgrade for new projects.",
+        effort: "drop-in",
       },
       {
         techId: "nestjs",
         note: "When the Express codebase needs imposed structure — Nest brings DI, modules, and conventions (and can even run on Express underneath).",
+        effort: "moderate",
       },
       {
         techId: "fastapi",
         note: "The Python equivalent of the 'lightweight API framework' slot — switch ecosystems when the team or the domain (data/ML) is Python-shaped.",
+        effort: "rewrite",
       },
       {
         techId: "go-http",
         note: "When ops footprint and raw throughput start to matter more than npm's library breadth.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -166,6 +187,20 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "nestjs",
         note: "People treat 'Node backend' as one choice. Express is a library you build a framework around; Nest is a full framework with an architecture. Migrating between them is a rewrite of structure, not a dependency swap.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own the assembled stack — validation, auth, error handling, project structure are your in-house framework to document and maintain",
+        why: "Express ships none of it; every app is a bespoke assembly a new hire learns from your code, because no tutorial covers your choices.",
+      },
+      {
+        need: "You now audit and track a deep npm dependency tree",
+        why: "The batteries the framework didn't include arrive as dozens of packages with independent maintainers, CVE streams, and abandonment risk.",
+      },
+      {
+        need: "You now own async error-handling discipline as a review gate",
+        why: "A rejected promise that misses next(err) is a hung request or a crashed process — the core predates the patterns that would have caught it for you.",
       },
     ],
     tags: ["minimalist", "default-choice", "aging-core"],
@@ -228,20 +263,37 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "express",
         note: "Only for legacy compatibility or maximal-familiarity reasons — going backward buys mindshare, not capability.",
+        effort: "drop-in",
       },
       {
         techId: "nestjs",
         note: "When you outgrow 'fast minimalist library' and need framework-scale structure — Nest can even use Fastify as its HTTP engine, keeping the speed.",
+        effort: "moderate",
       },
       {
         techId: "go-http",
         note: "If you're choosing Fastify purely for performance, Go is the next honest step — more speed and a radically simpler ops story, outside Node.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
       { techId: "prisma", note: "Typed data access plus schema-validated routes covers both boundaries of a Node service." },
       { techId: "drizzle", note: "A popular lean-and-fast pairing — both tools bet on staying close to the metal with types on top." },
       { techId: "websockets", note: "First-party WebSocket support rides on the same performance-focused core." },
+    ],
+    commitments: [
+      {
+        need: "You now own schema discipline as a team norm",
+        why: "The validation and serialization wins only exist for routes that declare schemas — unschema'd routes silently opt out, and the framework won't complain.",
+      },
+      {
+        need: "You now write the integration glue an Express team would npm-install",
+        why: "When a middleware exists only for Express, porting or wrapping it is your backlog item, not the ecosystem's.",
+      },
+      {
+        need: "You now train hires on the plugin and encapsulation model",
+        why: "Most Node developers arrive with Express reflexes; Fastify's scoped plugins are different enough to cause confused bugs before they cause productivity.",
+      },
     ],
     tags: ["minimalist", "performance", "modern-core"],
   },
@@ -304,18 +356,22 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "express",
         note: "Drop the framework when the service is small enough that structure-by-convention suffices.",
+        effort: "moderate",
       },
       {
         techId: "fastify",
         note: "If Nest's appeal was 'better than raw Express' rather than 'imposed architecture', Fastify may be the lighter answer — or use it as Nest's engine.",
+        effort: "moderate",
       },
       {
         techId: "aspnet-core",
         note: "The framework Nest is imitating, in its native habitat — if you're not bound to Node, the original has deeper batteries and better performance.",
+        effort: "rewrite",
       },
       {
         techId: "spring-boot",
         note: "The JVM's version of the same philosophy; Nest is the choice when you want that shape without leaving TypeScript.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -327,6 +383,20 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "express",
         note: "Nest isn't 'Express with extras' — it's a full framework with an inversion-of-control architecture that happens to use Express as an HTTP engine. Adopting it is an architectural commitment, not a library swap.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own the DI container's runtime behavior",
+        why: "Missing providers and circular modules surface at boot, not compile — someone on the team must read Nest's injector errors fluently.",
+      },
+      {
+        need: "You now enforce the framework's layering everywhere, including where it feels like overkill",
+        why: "Uniformity is the product; corners that shortcut the module/controller/service ceremony break the one promise Nest makes.",
+      },
+      {
+        need: "You now maintain decorator and metadata toolchain compatibility across TypeScript upgrades",
+        why: "experimentalDecorators, reflect-metadata, and build config must stay aligned — an upgrade treadmill plain Express apps simply don't have.",
       },
     ],
     tags: ["framework", "structure", "enterprise"],
@@ -390,14 +460,17 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "aspnet-core",
         note: "The .NET mirror image: same enterprise philosophy, generally better raw performance and lighter runtime. Choose by existing org ecosystem, not by feature comparison.",
+        effort: "rewrite",
       },
       {
         techId: "go-http",
         note: "The escape hatch when JVM footprint dominates: services that start in milliseconds and run in tens of MB — giving up Spring's framework depth entirely.",
+        effort: "rewrite",
       },
       {
         techId: "nestjs",
         note: "For teams leaving Java for TypeScript who still want the DI-and-modules shape they're used to.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -407,6 +480,20 @@ export const BACKEND_TECHS: Tech[] = [
     ],
     frictionWith: [
       { techId: "serverless-functions", note: "Cold-starting a JVM plus Spring's context per invocation is the canonical serverless anti-pattern — native images help but move the cost into your build." },
+    ],
+    commitments: [
+      {
+        need: "You now own JVM tuning and memory sizing in production",
+        why: "Heap, GC, and warm-up behavior are operational surface Go/Node teams simply don't have.",
+      },
+      {
+        need: "You now own the auto-configuration black box",
+        why: "Someone must be able to answer 'why does this bean exist?' — debugging conditional configuration is a distinct skill you keep in-house or suffer without.",
+      },
+      {
+        need: "You now curate the Spring ecosystem for your teams",
+        why: "There's a starter for everything; knowing what NOT to adopt is senior-engineer knowledge, and every module you do adopt joins your upgrade matrix.",
+      },
     ],
     tags: ["enterprise", "batteries-included", "jvm"],
   },
@@ -471,14 +558,17 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "django",
         note: "Same language, opposite philosophy: switch when you need the batteries (admin, auth, ORM, migrations) more than the microframework's agility.",
+        effort: "moderate",
       },
       {
         techId: "fastify",
         note: "The Node ecosystem's equivalent slot — schema-validated, lightweight, fast-for-its-runtime. Switch ecosystems when the team is TypeScript-shaped.",
+        effort: "rewrite",
       },
       {
         techId: "go-http",
         note: "The standard graduation path when a FastAPI service hits Python's performance ceiling — keep the API contract, swap the engine.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -490,6 +580,20 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "django",
         note: "Both are 'Python backends' and that's where the similarity ends: FastAPI is a microframework for APIs, Django a full-stack application factory. Choosing between them is choosing how much framework you want, not which brand.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own a multi-process deployment topology",
+        why: "The GIL means scaling is uvicorn/gunicorn workers behind a proxy — sizing worker counts, timeouts, and per-worker memory is your ops surface, not the framework's.",
+      },
+      {
+        need: "You now police the sync/async boundary in code review",
+        why: "One blocking call inside an async handler stalls the event loop for every request — the interpreter won't warn you; production will.",
+      },
+      {
+        need: "You now track a fast-moving dependency chain with a thin bus factor",
+        why: "FastAPI, Pydantic, and Starlette move quickly and have broken compatibility before (Pydantic v2) — pinning and migration work is recurring, not one-time.",
       },
     ],
     tags: ["microframework", "async", "python-data"],
@@ -556,14 +660,17 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "fastapi",
         note: "Same language, a tenth of the framework: switch when you need an API, not an application kit — or when async performance starts to matter.",
+        effort: "moderate",
       },
       {
         techId: "aspnet-core",
         note: "The batteries-included philosophy with a compiled runtime and static types — a better fit when the same product outgrows Python's ceilings.",
+        effort: "rewrite",
       },
       {
         techId: "spring-boot",
         note: "The JVM's application-kit equivalent; heavier ceremony, deeper enterprise integrations.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -578,6 +685,20 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "fastapi",
         note: "The reverse of the FastAPI entry, because the confusion flows both ways: Django is an application factory, FastAPI an API toolkit. 'Modern vs old' is the wrong frame — 'whole product vs endpoint layer' is the right one.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now design inside the ORM's dialect and own the escape hatches where it runs out",
+        why: "Admin, forms, and migrations all hang off the ORM — every raw-SQL workaround is a seam in the framework's most load-bearing wall, and you maintain the seam.",
+      },
+      {
+        need: "You now own a caching layer as a permanent architectural component",
+        why: "Django at real traffic is Django plus Redis/CDN doing the heavy lifting — cache strategy and invalidation become core application logic, not an optimization.",
+      },
+      {
+        need: "You now own the admin interface as production attack surface",
+        why: "The free back-office UI is a real application exposed to real users; its permissioning, auditing, and hardening are ongoing work, not a checkbox.",
       },
     ],
     tags: ["batteries-included", "admin", "monolith-shaped"],
@@ -643,20 +764,37 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "rust-axum",
         note: "When Go's performance isn't enough or its GC pauses matter — the next step up in speed and correctness, and a much bigger step up in difficulty.",
+        effort: "rewrite",
       },
       {
         techId: "aspnet-core",
         note: "Most of Go's performance with a real framework and ORM attached — the pragmatic middle when austerity isn't buying you anything.",
+        effort: "rewrite",
       },
       {
         techId: "fastify",
         note: "Going the other way: when npm's ecosystem and JS hiring matter more than the binary's size.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
       { techId: "postgres", note: "Go culture skips the ORM and talks to Postgres directly through pgx and sqlc-style codegen — SQL-first with compile-time-checked queries." },
       { techId: "grpc", note: "Go is gRPC's first-class citizen — protobuf codegen and the ecosystem's infra DNA make it the default for service-to-service meshes." },
       { techId: "kubernetes", note: "K8s is written in Go and Go binaries are its ideal tenants: tiny images, fast starts, health checks that answer instantly." },
+    ],
+    commitments: [
+      {
+        need: "You now own the conventions a framework would have imposed",
+        why: "Project layout, error wrapping, middleware patterns — plain Go dictates none of it, so your style guide is the framework and enforcing it is ongoing work.",
+      },
+      {
+        need: "You now write and maintain the batteries: auth flows, admin tooling, background jobs",
+        why: "The Go culture's answer to most framework features is 'a small library and some code you own' — and that code is yours forever.",
+      },
+      {
+        need: "You now own SQL fluency as a team requirement",
+        why: "The idiomatic data path is pgx and sqlc-style codegen, not an ORM — schema design, query tuning, and migrations are hand tools here.",
+      },
     ],
     tags: ["single-binary", "ops-first", "austere"],
   },
@@ -721,20 +859,37 @@ export const BACKEND_TECHS: Tech[] = [
       {
         techId: "go-http",
         note: "90% of the performance and the same single-binary ops story at a fraction of the difficulty — the question to answer before choosing Rust is 'why isn't Go enough?'",
+        effort: "rewrite",
       },
       {
         techId: "aspnet-core",
         note: "If the honest requirement is 'fast and typed' rather than 'fastest possible', a JIT'd framework with full batteries gets you most of the way in comfort.",
+        effort: "rewrite",
       },
       {
         techId: "fastify",
         note: "The pragmatic retreat when a Rust experiment meets a deadline: keep the API shape, ship in the ecosystem your team already knows.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
       { techId: "postgres", note: "sqlx-style compile-time-checked SQL against Postgres extends Rust's 'if it compiles it works' guarantee to the query layer." },
       { techId: "grpc", note: "Tonic (gRPC on the same Tokio/tower stack as Axum) makes Rust services first-class citizens in a typed service mesh." },
       { techId: "redis", note: "A common shape: Rust for the hot path, Redis for shared state — both obsessed with microseconds." },
+    ],
+    commitments: [
+      {
+        need: "You now fund a long onboarding ramp for every hire, indefinitely",
+        why: "The borrow checker plus async lifetimes takes months to internalize — 'productive-tomorrow Rust web developer' is not a hiring market that exists at scale.",
+      },
+      {
+        need: "You now own compile-time budgets in CI and the inner dev loop",
+        why: "Rust build times grow with the codebase; caching infrastructure and workspace splitting become real platform work, not nice-to-haves.",
+      },
+      {
+        need: "You now track a young async ecosystem that hasn't finished consolidating",
+        why: "Axum, tower, and friends are well-run but pre-1.0 in spirit — upgrades arrive as engineering tasks with thin migration docs, not version bumps.",
+      },
     ],
     tags: ["performance", "correctness", "specialist"],
   },

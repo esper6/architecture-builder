@@ -64,11 +64,11 @@ export const DATABASE_TECHS: Tech[] = [
       "The workload is a pure known-key lookup at massive scale where DynamoDB's model is simply a better fit",
     ],
     alternatives: [
-      { techId: "mysql", note: "When the team, tooling, or hosting environment is already MySQL-shaped — the gap has narrowed to features, not viability." },
-      { techId: "mssql", note: "In a Microsoft shop where the licensing is already paid and the DBAs already exist, fighting the grain costs more than the license." },
-      { techId: "sqlite", note: "Single-server or embedded apps: if one machine can hold the workload, skip the database server entirely." },
-      { techId: "mongodb", note: "When documents genuinely are the domain model and JSONB-in-a-relational-shell feels like fighting the tool." },
-      { techId: "dynamodb", note: "When access patterns are known, stable, and enormous — trade query flexibility for guaranteed latency at any scale." },
+      { techId: "mysql", note: "When the team, tooling, or hosting environment is already MySQL-shaped — the gap has narrowed to features, not viability.", effort: "moderate" },
+      { techId: "mssql", note: "In a Microsoft shop where the licensing is already paid and the DBAs already exist, fighting the grain costs more than the license.", effort: "moderate" },
+      { techId: "sqlite", note: "Single-server or embedded apps: if one machine can hold the workload, skip the database server entirely.", effort: "moderate" },
+      { techId: "mongodb", note: "When documents genuinely are the domain model and JSONB-in-a-relational-shell feels like fighting the tool.", effort: "rewrite" },
+      { techId: "dynamodb", note: "When access patterns are known, stable, and enormous — trade query flexibility for guaranteed latency at any scale.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "monolith", note: "One app, one relational database with real transactions — the pairing that built most successful software." },
@@ -82,6 +82,24 @@ export const DATABASE_TECHS: Tech[] = [
       {
         techId: "mongodb",
         note: "The catalog's most common false equivalence. Postgres enforces structure and integrity in the database; MongoDB moves both into application code. Teams pick MongoDB 'to move fast', then spend years rebuilding constraints by hand — the flexibility is a loan, not a gift.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own connection-pool architecture",
+        why: "The connection-per-client model is expensive — past modest concurrency, PgBouncer or RDS Proxy is part of your stack, with its own transaction-mode caveats.",
+      },
+      {
+        need: "You must plan and rehearse major-version upgrades",
+        why: "Majors don't upgrade in place across data formats — logical replication or dump/restore windows become a recurring project on someone's calendar.",
+      },
+      {
+        need: "You now own vacuum and bloat monitoring",
+        why: "MVCC leaves dead tuples behind — untended autovacuum on hot tables surfaces as mystery slowdowns and, eventually, wraparound emergencies.",
+      },
+      {
+        need: "You must prove your restore path, not just your backup job",
+        why: "WAL archiving and PITR only count once someone has rehearsed the recovery — a backup that has never been restored is a hope, not a plan.",
       },
     ],
     tags: ["default-choice", "relational", "open-source"],
@@ -134,13 +152,27 @@ export const DATABASE_TECHS: Tech[] = [
       "You're not on Azure and not a Microsoft shop: you'd be paying the toll without getting the road",
     ],
     alternatives: [
-      { techId: "postgres", note: "The default escape route — most SQL Server workloads port cleanly, and the license line goes to zero. The migration cost is T-SQL surface area (procs, SSIS, Query Store habits), not the data model." },
-      { techId: "mysql", note: "Rarely the migration target from SQL Server — if you're leaving, Postgres matches the feature depth far better." },
+      { techId: "postgres", note: "The default escape route — most SQL Server workloads port cleanly, and the license line goes to zero. The migration cost is T-SQL surface area (procs, SSIS, Query Store habits), not the data model.", effort: "moderate" },
+      { techId: "mysql", note: "Rarely the migration target from SQL Server — if you're leaving, Postgres matches the feature depth far better.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "The classic Microsoft stack — tooling, drivers, and documentation all assume this pairing." },
       { techId: "ef-core", note: "EF Core's most battle-tested provider; migrations and LINQ translation are smoothest here." },
       { techId: "azure-service-bus", note: "The all-Azure enterprise triangle: one cloud, one support contract, one identity model." },
+    ],
+    commitments: [
+      {
+        need: "You now own license-aware capacity planning",
+        why: "Per-core pricing means every scale-up, replica, and environment is a procurement decision — architecture reviews acquire a finance seat.",
+      },
+      {
+        need: "You must track edition and SKU feature boundaries",
+        why: "The feature you designed around may live one edition above your budget — feature planning includes checking the licensing matrix, every time.",
+      },
+      {
+        need: "You now own audit readiness",
+        why: "Microsoft licensing audits are a real event — keeping deployment inventory reconciled with entitlements is standing compliance work.",
+      },
     ],
     tags: ["enterprise", "relational", "microsoft"],
   },
@@ -196,12 +228,26 @@ export const DATABASE_TECHS: Tech[] = [
       "You'll want the Postgres extension ecosystem (geo, vectors, full-text) — bolting those on later is a migration, and data outlives code",
     ],
     alternatives: [
-      { techId: "postgres", note: "The default greenfield answer; switch when you have no MySQL legacy pulling you back — feature depth and momentum both point this way." },
-      { techId: "sqlite", note: "For the small end of MySQL's classic territory (single-server sites), SQLite removes the database server entirely." },
+      { techId: "postgres", note: "The default greenfield answer; switch when you have no MySQL legacy pulling you back — feature depth and momentum both point this way.", effort: "moderate" },
+      { techId: "sqlite", note: "For the small end of MySQL's classic territory (single-server sites), SQLite removes the database server entirely.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "monolith", note: "The classic boring web stack: one app server, one MySQL, decades of collective experience running exactly this." },
       { techId: "vms", note: "The LAMP-era pairing still quietly powering a huge share of the web — well-understood, cheap, unglamorous." },
+    ],
+    commitments: [
+      {
+        need: "You must enforce strict SQL modes as policy",
+        why: "Historical permissive defaults (silent truncation, loose modes) still lurk in configs and inherited deployments — data quality depends on someone pinning the settings everywhere.",
+      },
+      {
+        need: "You now own large-table migration windows",
+        why: "Online DDL has limits — altering a big hot table still means gh-ost/pt-osc tooling and a planned change window, not a casual migration.",
+      },
+      {
+        need: "You must pick and defend a fork strategy",
+        why: "MySQL, MariaDB, and Percona diverge in features and compatibility — the choice recurs at every upgrade and every managed-hosting move.",
+      },
     ],
     tags: ["relational", "web-classic", "open-source"],
   },
@@ -261,8 +307,8 @@ export const DATABASE_TECHS: Tech[] = [
       "You already know you'll scale horizontally soon — starting on SQLite schedules a migration, and data outlives code",
     ],
     alternatives: [
-      { techId: "postgres", note: "The graduation path: the moment you need a second writer or a second machine. Migrating schema is easy; migrating live data under traffic is the part people underestimate." },
-      { techId: "mysql", note: "Same graduation logic if your world is MySQL-shaped — but Postgres is the more common landing zone." },
+      { techId: "postgres", note: "The graduation path: the moment you need a second writer or a second machine. Migrating schema is easy; migrating live data under traffic is the part people underestimate.", effort: "moderate" },
+      { techId: "mysql", note: "Same graduation logic if your world is MySQL-shaped — but Postgres is the more common landing zone.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "monolith", note: "One process, one file: the lowest-total-complexity stack that is still a real production system." },
@@ -277,6 +323,20 @@ export const DATABASE_TECHS: Tech[] = [
       {
         techId: "postgres",
         note: "Both speak SQL, so people treat SQLite as 'small Postgres'. It isn't — it's a library, not a server. The dividing question is 'will more than one machine ever touch this data?', and the answer decides the category, not the size.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own the file as your entire durability story",
+        why: "Backup, replication (Litestream or similar), and disaster recovery are your scripts against one file — no server is doing any of it for you.",
+      },
+      {
+        need: "You must watch for the second-machine moment",
+        why: "The migration to a client-server database lands exactly when traffic is growing — someone has to call it before the single-writer wall does.",
+      },
+      {
+        need: "You must opt into strictness the engine won't impose",
+        why: "Flexible typing will happily store a string in your INTEGER column — STRICT tables and pragmas are discipline you configure, not defaults you inherit.",
       },
     ],
     tags: ["embedded", "zero-ops", "single-server"],
@@ -339,9 +399,9 @@ export const DATABASE_TECHS: Tech[] = [
       "Reporting and ad-hoc queries across entities are a core requirement",
     ],
     alternatives: [
-      { techId: "postgres", note: "JSONB gives you documents inside a relational database — the right call when only part of the domain is document-shaped and the rest wants integrity." },
-      { techId: "dynamodb", note: "If your access patterns are known and fixed and scale is the driver, Dynamo's discipline beats Mongo's flexibility." },
-      { techId: "cosmosdb", note: "On Azure, Cosmos speaks the MongoDB wire protocol — same programming model, different operational and pricing regime." },
+      { techId: "postgres", note: "JSONB gives you documents inside a relational database — the right call when only part of the domain is document-shaped and the rest wants integrity.", effort: "rewrite" },
+      { techId: "dynamodb", note: "If your access patterns are known and fixed and scale is the driver, Dynamo's discipline beats Mongo's flexibility.", effort: "rewrite" },
+      { techId: "cosmosdb", note: "On Azure, Cosmos speaks the MongoDB wire protocol — same programming model, different operational and pricing regime.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "express", note: "The MEAN-era pairing endures: JSON documents end to end with no translation layer." },
@@ -355,6 +415,24 @@ export const DATABASE_TECHS: Tech[] = [
       {
         techId: "dynamodb",
         note: "Both wear the NoSQL label, but Mongo is a general document store with ad-hoc queries; Dynamo is a key-value machine that demands access patterns up front. Teams pick Dynamo expecting Mongo's flexibility and hit a wall at the first unplanned query.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own schema governance in application code",
+        why: "The database won't reject a malformed document — every writer must agree on shape, forever.",
+      },
+      {
+        need: "You now own document-shape versioning for the life of the data",
+        why: "Old documents never migrate themselves — every reader carries compatibility code for every shape ever written, or you run backfill projects.",
+      },
+      {
+        need: "You must design and defend cross-document integrity yourself",
+        why: "Foreign keys don't exist — orphaned references are prevented by application convention and the cleanup jobs you write.",
+      },
+      {
+        need: "You now own replica-set operations or an Atlas bill",
+        why: "Production Mongo means replica sets, elections, and oplog sizing — self-managed that's real ops work; managed, it's a permanent line item.",
       },
     ],
     tags: ["document", "nosql", "schema-flexible"],
@@ -419,10 +497,10 @@ export const DATABASE_TECHS: Tech[] = [
       "Multi-cloud portability matters — this is the least portable data model in the category",
     ],
     alternatives: [
-      { techId: "postgres", note: "When access patterns are unknown or evolving, a relational schema is reversible in a way a single-table design is not — flexibility now, scale engineering later." },
-      { techId: "cosmosdb", note: "The Azure counterpart: comparable global-scale guarantees with a multi-model API surface instead of pure key-value." },
-      { techId: "cassandra", note: "The self-hosted relative: similar query-first modeling without vendor lock-in — paid for with a serious operations team." },
-      { techId: "mongodb", note: "When you want document flexibility and ad-hoc queries more than guaranteed-latency key access." },
+      { techId: "postgres", note: "When access patterns are unknown or evolving, a relational schema is reversible in a way a single-table design is not — flexibility now, scale engineering later.", effort: "rewrite" },
+      { techId: "cosmosdb", note: "The Azure counterpart: comparable global-scale guarantees with a multi-model API surface instead of pure key-value.", effort: "rewrite" },
+      { techId: "cassandra", note: "The self-hosted relative: similar query-first modeling without vendor lock-in — paid for with a serious operations team.", effort: "rewrite" },
+      { techId: "mongodb", note: "When you want document flexibility and ad-hoc queries more than guaranteed-latency key access.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "serverless-functions", note: "The canonical pairing: no connection pools to exhaust, per-request pricing on both sides, IAM auth end to end." },
@@ -433,6 +511,24 @@ export const DATABASE_TECHS: Tech[] = [
       {
         techId: "mongodb",
         note: "'Both NoSQL' hides opposite philosophies: Mongo says 'store documents, query however you like'; Dynamo says 'declare your queries, and I'll make them infinitely fast'. Swapping one for the other fails in whichever direction you attempt it.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You must enumerate your access patterns before writing the table",
+        why: "Query patterns are physical design here — a new query later can mean a new table or a GSI backfill.",
+      },
+      {
+        need: "You now own hot-partition awareness in key design",
+        why: "Throughput is per-partition — a popular tenant or a timestamp-prefixed key concentrates load and throttles you at any table size.",
+      },
+      {
+        need: "You must build a parallel path for analytics",
+        why: "Ad-hoc queries and aggregations aren't what it does — exports to S3/Athena or streams into a warehouse become standing infrastructure, not one-offs.",
+      },
+      {
+        need: "You now own cost modeling per access pattern",
+        why: "Pricing is per request and per GSI — a chatty new feature or an extra index changes the bill in ways capacity planning must catch first.",
       },
     ],
     tags: ["key-value", "serverless-native", "aws"],
@@ -491,14 +587,32 @@ export const DATABASE_TECHS: Tech[] = [
       "Any future off Azure is plausible",
     ],
     alternatives: [
-      { techId: "dynamodb", note: "The AWS counterpart — purer key-value, simpler pricing to reason about, equally locked in. Cloud choice usually decides this pairing, not features." },
-      { techId: "mongodb", note: "Atlas offers multi-region documents with cloud portability — less turnkey than Cosmos, but not married to Azure." },
-      { techId: "postgres", note: "For most Azure apps that reached for Cosmos by default: a managed Postgres is simpler, cheaper, and more capable until global distribution is a proven requirement." },
+      { techId: "dynamodb", note: "The AWS counterpart — purer key-value, simpler pricing to reason about, equally locked in. Cloud choice usually decides this pairing, not features.", effort: "rewrite" },
+      { techId: "mongodb", note: "Atlas offers multi-region documents with cloud portability — less turnkey than Cosmos, but not married to Azure.", effort: "moderate" },
+      { techId: "postgres", note: "For most Azure apps that reached for Cosmos by default: a managed Postgres is simpler, cheaper, and more capable until global distribution is a proven requirement.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "First-party .NET SDKs and the shared Azure identity/deployment story make this the low-friction pairing." },
       { techId: "serverless-functions", note: "Azure Functions' Cosmos bindings and the change feed make an event-driven serverless stack with almost no glue code." },
       { techId: "azure-service-bus", note: "The all-Azure event pipeline: change feed to bus to consumers, one cloud, one bill." },
+    ],
+    commitments: [
+      {
+        need: "You now own RU budgeting as an operational discipline",
+        why: "Throughput is an abstract currency — every query shape has an RU price, and a cross-partition query can cost 100x a point read without anyone noticing until the invoice.",
+      },
+      {
+        need: "You must get the partition key right on day one",
+        why: "It's chosen when you know the least and is nearly irreversible — changing it later means a full data migration to a new container.",
+      },
+      {
+        need: "You now own indexing-policy curation",
+        why: "Everything is indexed by default, which burns RUs on every write — trimming the policy per container is recurring tuning work, not setup.",
+      },
+      {
+        need: "You must choose and justify a consistency level per workload",
+        why: "Five levels each trade latency, availability, and cost differently — the dropdown is only power if someone on the team genuinely understands it.",
+      },
     ],
     tags: ["multi-model", "global-distribution", "azure"],
   },
@@ -560,9 +674,9 @@ export const DATABASE_TECHS: Tech[] = [
       "No one owns operations — an untended cluster degrades in slow motion until it fails all at once",
     ],
     alternatives: [
-      { techId: "dynamodb", note: "The managed exit: similar query-first modeling and scale guarantees with the ops burden outsourced to AWS — trading operational sovereignty for sleep." },
-      { techId: "cosmosdb", note: "Speaks the Cassandra API on Azure — a migration path that keeps CQL but drops the 3 AM repair jobs." },
-      { techId: "postgres", note: "Partitioned Postgres (or Timescale-style extensions) handles far more ingest than intuition suggests — exhaust this before buying a ring." },
+      { techId: "dynamodb", note: "The managed exit: similar query-first modeling and scale guarantees with the ops burden outsourced to AWS — trading operational sovereignty for sleep.", effort: "rewrite" },
+      { techId: "cosmosdb", note: "Speaks the Cassandra API on Azure — a migration path that keeps CQL but drops the 3 AM repair jobs.", effort: "moderate" },
+      { techId: "postgres", note: "Partitioned Postgres (or Timescale-style extensions) handles far more ingest than intuition suggests — exhaust this before buying a ring.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "kafka", note: "The classic ingest pipeline: Kafka absorbs and orders the firehose, Cassandra persists it — two systems built for the same scale philosophy." },
@@ -572,6 +686,24 @@ export const DATABASE_TECHS: Tech[] = [
       {
         techId: "mongodb",
         note: "Filed together under NoSQL, built for different universes: Mongo is a general document store for flexible development; Cassandra is a write-throughput machine that demands your queries in advance. Choosing between them by comparing feature lists misses that the workloads barely overlap.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own a permanent database-operations role",
+        why: "Compaction, anti-entropy repair, JVM tuning, and capacity planning are somebody's actual job — an untended ring degrades in slow motion.",
+      },
+      {
+        need: "You must model every query before its table exists",
+        why: "Tables are designed per query with no joins — a new access pattern is a new denormalized table plus a backfill project.",
+      },
+      {
+        need: "You now own partition-size vigilance",
+        why: "Unbounded partitions are the classic modeling error that works in dev and dies at scale — key design must cap growth from day one.",
+      },
+      {
+        need: "You must run repair on a strict cadence",
+        why: "Eventual consistency plus tombstones means anti-entropy repair is scheduled hygiene — skip it long enough and deleted data resurrects.",
       },
     ],
     tags: ["wide-column", "write-optimized", "multi-dc"],

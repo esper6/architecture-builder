@@ -59,18 +59,22 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "kafka",
         note: "Switch when messages stop being work-to-do and start being facts-to-retain: multiple consumers, replay, event history.",
+        effort: "rewrite",
       },
       {
         techId: "azure-service-bus",
         note: "Same conceptual model, nobody to operate — the obvious swap for Azure shops.",
+        effort: "moderate",
       },
       {
         techId: "sqs-sns",
         note: "The AWS-managed equivalent; less routing sophistication, zero broker operations.",
+        effort: "moderate",
       },
       {
         techId: "nats",
         note: "When you want lighter-weight messaging with a smaller footprint and can live with a smaller ecosystem.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -82,6 +86,20 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "kafka",
         note: "The most common false equivalence in system design. RabbitMQ distributes work: each message consumed once, acked, deleted. Kafka retains facts: consumers read and re-read an immutable log at their own pace. 'Which broker?' is the wrong question until you know whether your messages are work or history.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now operate a stateful broker as tier-one infrastructure",
+        why: "Memory alarms, disk watermarks, queue-depth monitoring, and cluster upgrades are yours — the broker is now the most availability-critical box between any two services.",
+      },
+      {
+        need: "You now need a dead-letter triage process, not just a dead-letter queue",
+        why: "The DLQ is a config line; someone reading it, classifying failures, and replaying or discarding is a standing rota. An undrained DLQ is where failures go to be forgotten.",
+      },
+      {
+        need: "You now must write idempotent consumers despite per-message acks",
+        why: "Redelivery after a worker crash means at-least-once in practice — the duplicate arrives on your worst day, and only consumer-side idempotency absorbs it.",
       },
     ],
     tags: ["queue", "work-distribution", "amqp"],
@@ -140,18 +158,22 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "rabbitmq",
         note: "Switch when messages are really work items consumed once — you get acks, retries, and DLQs for free instead of building them.",
+        effort: "rewrite",
       },
       {
         techId: "sqs-sns",
         note: "If the honest requirement is 'queue plus fan-out' rather than 'replayable log', the managed primitives are a fraction of the complexity.",
+        effort: "rewrite",
       },
       {
         techId: "nats",
         note: "JetStream covers lightweight persistent-streaming needs with a footprint an order of magnitude smaller.",
+        effort: "moderate",
       },
       {
         techId: "redis-streams",
         note: "For modest-volume streaming when you already run Redis and can accept weaker durability guarantees.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -166,6 +188,24 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "rabbitmq",
         note: "Kafka is a log of facts, RabbitMQ a queue of work. Kafka doesn't delete on consume, doesn't ack per message, doesn't route per message — because it's not trying to. Using Kafka as a job queue means hand-building everything RabbitMQ gives you; using RabbitMQ as an event store means losing your history on consume.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own partition-key design and its consequences",
+        why: "Ordering, parallelism, and hot spots are all decided by the key — and rekeying a topic in production is a project.",
+      },
+      {
+        need: "You now need consumer-lag monitoring and alerting",
+        why: "A silently stalled consumer is data loss on a delay timer.",
+      },
+      {
+        need: "You now build the retry/DLQ/poison-message machinery yourself, per consumer",
+        why: "The broker has no per-message redelivery — retry topics, dead-letter topics, and skip-or-halt decisions are application code every consuming team writes and maintains.",
+      },
+      {
+        need: "You now need a schema-contract regime for data that outlives its producers",
+        why: "Retained events are read by consumers that don't exist yet; without a schema registry and compatibility rules, a payload change today breaks a replay two years from now.",
       },
     ],
     tags: ["event-log", "streaming", "replay"],
@@ -221,20 +261,41 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "rabbitmq",
         note: "The self-hosted equivalent: more routing flexibility and portability, and now you operate a broker.",
+        effort: "moderate",
       },
       {
         techId: "sqs-sns",
         note: "The AWS counterpart — simpler primitives, same 'managed and boring' virtue, if your cloud is AWS.",
+        effort: "moderate",
       },
       {
         techId: "kafka",
         note: "When messages become replayable facts rather than consumable work — on Azure, that pressure usually points at Event Hubs' Kafka-compatible surface.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "First-party SDK, Functions triggers, and managed-identity auth make the all-Azure .NET path frictionless." },
       { techId: "serverless-functions", note: "Queue-triggered Azure Functions are the canonical consumer — scale-out workers with zero polling code." },
       { techId: "event-driven", note: "A managed broker removes the biggest adoption barrier to async architecture: operating the middleware." },
+    ],
+    commitments: [
+      {
+        need: "You now own idempotency where duplicate detection ends",
+        why: "Dedup covers a time window, not forever, and delivery is still at-least-once — the consumer that can't survive a duplicate is a production incident waiting for a retry storm.",
+      },
+      {
+        need: "You now design within quotas and tiers, and watch them as you grow",
+        why: "Message-size limits, throughput units, and premium-only features are architectural constraints; a growth spurt turns a tier boundary into an unplanned re-negotiation.",
+      },
+      {
+        need: "You now need someone who drains the dead-letter queues",
+        why: "Dead-lettering with reason codes is native, but a DLQ nobody reads is silent message loss with better bookkeeping — triage and redrive are a process you staff.",
+      },
+      {
+        need: "You now maintain a cloud-tethered inner loop",
+        why: "Local development means an emulator or a real Azure namespace — dev and CI environments need a namespace strategy, and 'run it all in Docker' stops being true.",
+      },
     ],
     tags: ["managed", "azure", "enterprise-messaging"],
   },
@@ -292,24 +353,46 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "azure-service-bus",
         note: "The Azure counterpart, with a richer enterprise feature set (sessions, dedup, transactions) built in.",
+        effort: "moderate",
       },
       {
         techId: "rabbitmq",
         note: "When you need broker-side routing intelligence or you're off AWS — at the price of operating it.",
+        effort: "moderate",
       },
       {
         techId: "kafka",
         note: "When consumers need to replay history or many systems read the same events independently — a queue can't become a log.",
+        effort: "rewrite",
       },
       {
         techId: "nats",
         note: "A portable, self-hosted lightweight alternative when AWS lock-in is the objection.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
       { techId: "serverless-arch", note: "The natural glue of serverless designs — queues buffer between functions, SNS fans events out to them." },
       { techId: "serverless-functions", note: "SQS-triggered Lambdas with automatic scaling and batching is the pattern AWS optimized end to end." },
       { techId: "dynamodb", note: "The all-managed AWS spine: per-request pricing on both sides, zero servers anywhere." },
+    ],
+    commitments: [
+      {
+        need: "You now write idempotent consumers everywhere, from day one",
+        why: "At-least-once and unordered are the defaults, not edge cases — the duplicate and the out-of-order pair WILL arrive, and only consumer design absorbs them.",
+      },
+      {
+        need: "You now own DLQ alarms and a redrive process",
+        why: "Failed messages land in dead-letter queues that page nobody by default; without monitoring and an owner, they age out of retention and vanish.",
+      },
+      {
+        need: "You now watch per-request spend as a growth metric",
+        why: "Pricing that rounds to zero at launch crosses over at sustained volume — a chatty retry loop or a polling misconfiguration shows up on the invoice before the dashboard.",
+      },
+      {
+        need: "You now maintain messaging topology as IAM policies and filter rules",
+        why: "Who may publish and what routes where lives in IAM statements and SNS filter policies — routing logic a broker would hold is now spread across security config.",
+      },
     ],
     tags: ["managed", "aws", "queue", "fan-out"],
   },
@@ -365,20 +448,37 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "kafka",
         note: "When retained history at scale and the connector ecosystem matter more than footprint and latency.",
+        effort: "moderate",
       },
       {
         techId: "rabbitmq",
         note: "When you want mature broker-side routing and a decades-deep operational playbook over raw speed.",
+        effort: "moderate",
       },
       {
         techId: "redis-streams",
         note: "A similar 'lightweight streaming' niche — choose Redis Streams if Redis is already in your stack, NATS if you're starting fresh.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
       { techId: "kubernetes", note: "A tiny stateless-ish binary with native clustering — the messaging layer K8s-native teams reach for." },
       { techId: "go-http", note: "Culturally and technically aligned: small, fast, static-binary Go services talking over NATS." },
       { techId: "microservices", note: "Built-in request/reply plus pub/sub covers both sync and async inter-service patterns with one lightweight system." },
+    ],
+    commitments: [
+      {
+        need: "You now own the durability decision per subject, and its review",
+        why: "Core NATS drops messages with no subscriber by design; every new message flow needs an explicit 'ephemeral or JetStream?' call, and the wrong default is silent loss.",
+      },
+      {
+        need: "You now grow your own operators instead of hiring them",
+        why: "Engineers who have run NATS in production are a genuine search — expertise is built in-house, and the bus factor on 'who understands JetStream clustering' starts at one.",
+      },
+      {
+        need: "You now hand-build the integrations Kafka shops download",
+        why: "There is no Connect-style connector catalog — every pipeline into a warehouse, search index, or third-party system is custom code your team writes and maintains.",
+      },
     ],
     tags: ["lightweight", "cloud-native", "pub-sub"],
   },
@@ -436,18 +536,22 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "kafka",
         note: "The graduation path when retention, replay, and durability requirements outgrow a memory-first store.",
+        effort: "moderate",
       },
       {
         techId: "rabbitmq",
         note: "When you need real broker features — routing, DLQs, delivery guarantees — more than you need to avoid a new deployment.",
+        effort: "moderate",
       },
       {
         techId: "sqs-sns",
         note: "If the goal is 'reliable queue with no ops', a managed queue beats hardening Redis for durability.",
+        effort: "moderate",
       },
       {
         techId: "nats",
         note: "The other lightweight option — choose NATS when you're not already running Redis and want messaging-first design.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -458,6 +562,20 @@ export const MESSAGING_TECHS: Tech[] = [
       {
         techId: "kafka",
         note: "Both are append-only logs with consumer groups, which tempts the comparison. But Kafka is a durable distributed commit log built for retention and replay at scale; Redis Streams is a data structure in a memory-first cache. Same shape, different guarantees — the difference shows up in your worst week, not your demo.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now treat Redis persistence config as a durability contract",
+        why: "AOF fsync policy decides whether acknowledged messages survive a crash — the default loses them, and nobody re-reads that config file until the post-mortem.",
+      },
+      {
+        need: "You now own stream trimming policy on every stream",
+        why: "History lives in RAM; an untrimmed stream quietly eats the memory of the cache it shares — your messaging bug becomes everyone's eviction storm.",
+      },
+      {
+        need: "You now hand-roll stalled-consumer recovery and poison handling",
+        why: "Pending-entry lists give you the raw data, but claiming stuck messages, capping retries, and parking poison entries is application code with no broker to fall back on.",
       },
     ],
     tags: ["pragmatic", "streams", "low-ops"],

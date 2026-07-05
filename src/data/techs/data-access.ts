@@ -57,13 +57,27 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "The team treats it as 'not needing to know SQL' — that's how the production incidents get written",
     ],
     alternatives: [
-      { techId: "dapper", note: "The classic hybrid: EF Core for writes and complex object graphs, Dapper for the hot read paths where you want to own the SQL. Many mature .NET codebases run exactly this split." },
-      { techId: "ado-net", note: "The substrate underneath both — only worth reaching for directly in extreme bulk/streaming scenarios EF and Dapper can't express." },
+      { techId: "dapper", note: "The classic hybrid: EF Core for writes and complex object graphs, Dapper for the hot read paths where you want to own the SQL. Many mature .NET codebases run exactly this split.", effort: "moderate" },
+      { techId: "ado-net", note: "The substrate underneath both — only worth reaching for directly in extreme bulk/streaming scenarios EF and Dapper can't express.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "Designed together: DI registration, logging, health checks, and configuration all click in one line each." },
       { techId: "mssql", note: "The all-Microsoft path — EF's SQL Server provider is its most battle-tested." },
       { techId: "postgres", note: "The Npgsql provider is excellent; EF Core + Postgres is the standard non-Microsoft-database .NET stack." },
+    ],
+    commitments: [
+      {
+        need: "You now own N+1 vigilance as a code-review discipline",
+        why: "Navigation properties make the N+1 the easiest query to write — nothing flags it until production data volumes reveal it.",
+      },
+      {
+        need: "You must keep someone who can read generated SQL and change-tracker behavior",
+        why: "When an endpoint gets slow, the diagnosis runs through EF's output, not your code — that skill has to live on the team, permanently.",
+      },
+      {
+        need: "You now own migration discipline across environments",
+        why: "EF generates the migrations, but ordering, rollback plans, and production windows for big-table changes are a process you run forever.",
+      },
     ],
     tags: ["orm", "full-orm", "migrations"],
   },
@@ -115,12 +129,26 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "The team is junior in SQL — Dapper hands you the gun the ORM was keeping in the drawer",
     ],
     alternatives: [
-      { techId: "ef-core", note: "When the write model grows rich (object graphs, evolving schema, migrations), the full ORM's automation starts paying for its abstraction — or run both, split by read/write." },
-      { techId: "ado-net", note: "Dropping further down buys almost nothing — Dapper is already within noise of the metal. Only raw streaming/bulk scenarios justify it." },
+      { techId: "ef-core", note: "When the write model grows rich (object graphs, evolving schema, migrations), the full ORM's automation starts paying for its abstraction — or run both, split by read/write.", effort: "moderate" },
+      { techId: "ado-net", note: "Dropping further down buys almost nothing — Dapper is already within noise of the metal. Only raw streaming/bulk scenarios justify it.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "A minimal-API + Dapper stack is the .NET equivalent of the lean, SQL-first services popular in Go." },
       { techId: "mssql", note: "Its birthplace — Stack Overflow ran (and runs) Dapper against SQL Server at very serious scale." },
+    ],
+    commitments: [
+      {
+        need: "You now own schema migration tooling",
+        why: "Dapper has no migrations story — SQL scripts, DbUp, or Flyway becomes a separate tool you choose, wire into CI, and maintain for the system's lifetime.",
+      },
+      {
+        need: "You must keep hand-written SQL and the schema in sync by discipline",
+        why: "SQL lives in strings the compiler can't see — every column rename is a grep-and-test exercise unless you build integration testing around the queries.",
+      },
+      {
+        need: "You now own write orchestration",
+        why: "No change tracking or unit-of-work means transaction boundaries and multi-entity consistency are explicit application code, feature by feature.",
+      },
     ],
     tags: ["micro-orm", "sql-first", "performance"],
   },
@@ -172,11 +200,25 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "Anyone on the team is tempted to concatenate SQL strings — the substrate has no guardrails",
     ],
     alternatives: [
-      { techId: "dapper", note: "The default answer to 'we need control': same SQL ownership, boilerplate handled, negligible overhead. This is where 'we'll just use ADO.NET' projects should land." },
-      { techId: "ef-core", note: "If the reason for raw access was distrust of ORMs rather than a measured need, modern EF Core deserves a re-evaluation." },
+      { techId: "dapper", note: "The default answer to 'we need control': same SQL ownership, boilerplate handled, negligible overhead. This is where 'we'll just use ADO.NET' projects should land.", effort: "drop-in" },
+      { techId: "ef-core", note: "If the reason for raw access was distrust of ORMs rather than a measured need, modern EF Core deserves a re-evaluation.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "mssql", note: "SqlBulkCopy and SQL Server-specific command features are the main reason to be at this level at all." },
+    ],
+    commitments: [
+      {
+        need: "You now own an in-house data-access layer as a codebase",
+        why: "Mapping helpers, parameter builders, and connection management become library code someone maintains alongside the actual product.",
+      },
+      {
+        need: "You must enforce parameterization by review",
+        why: "The substrate has no guardrails — one lazy string-concatenated query is a SQL injection, and only humans stand in the way.",
+      },
+      {
+        need: "You now own connection lifecycle correctness",
+        why: "A missed using-block leaks connections that surface as pool exhaustion under load, far from the line of code that caused it.",
+      },
     ],
     tags: ["low-level", "substrate", "bulk-operations"],
   },
@@ -228,13 +270,27 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "Extreme cold-start-sensitive edge deployments — verify the current engine story fits your platform before committing",
     ],
     alternatives: [
-      { techId: "drizzle", note: "The same-slot alternative: swap when you know SQL well and want the query language to BE SQL — lighter runtime, more control, younger ecosystem." },
-      { techId: "typeorm", note: "Only really relevant as the incumbent you're migrating from — new projects rarely have a reason to pick it over Prisma." },
+      { techId: "drizzle", note: "The same-slot alternative: swap when you know SQL well and want the query language to BE SQL — lighter runtime, more control, younger ecosystem.", effort: "moderate" },
+      { techId: "typeorm", note: "Only really relevant as the incumbent you're migrating from — new projects rarely have a reason to pick it over Prisma.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "nextjs", note: "The canonical full-stack TS pairing — Prisma in server components/routes is half the ecosystem's tutorials." },
       { techId: "trpc", note: "Prisma's generated types flow through tRPC procedures to the client: schema-to-UI type safety with no manual contracts." },
       { techId: "postgres", note: "Its best-supported and most-deployed target — the default pairing in TS-land." },
+    ],
+    commitments: [
+      {
+        need: "You now own the query engine as a deployment artifact",
+        why: "The engine is a moving part with its own binary, cold-start profile, and platform-compatibility matrix — it ships with you everywhere, forever.",
+      },
+      {
+        need: "You must track where the type-safety boundary ends",
+        why: "Complex SQL pushes you to $queryRaw, which returns untyped rows — someone must decide how much of the codebase lives outside the guarantees you chose Prisma for.",
+      },
+      {
+        need: "You now own knowing your version's query-generation strategy",
+        why: "Join behavior has changed materially across releases — the same schema can produce different query patterns after an upgrade, and load tests are how you find out.",
+      },
     ],
     tags: ["orm", "schema-first", "codegen"],
   },
@@ -286,13 +342,27 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "You're betting a long-lived enterprise system on it and can't absorb API evolution",
     ],
     alternatives: [
-      { techId: "prisma", note: "The same-slot alternative: swap when you want maximum polish, guardrails, and ecosystem depth and will accept the engine layer and its own query language." },
-      { techId: "typeorm", note: "Practically never the switch target — Drizzle exists in part because of TypeORM's unfixable problems." },
+      { techId: "prisma", note: "The same-slot alternative: swap when you want maximum polish, guardrails, and ecosystem depth and will accept the engine layer and its own query language.", effort: "moderate" },
+      { techId: "typeorm", note: "Practically never the switch target — Drizzle exists in part because of TypeORM's unfixable problems.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "trpc", note: "Two thin, inference-based TS tools: schema types flow through procedures to the client with no codegen anywhere." },
       { techId: "postgres", note: "Its richest dialect support — the Drizzle + Postgres combination is the SQL-first TS stack." },
       { techId: "serverless-functions", note: "No engine binary and tiny bundles make it the least-friction data layer for function and edge runtimes." },
+    ],
+    commitments: [
+      {
+        need: "You must budget for API churn",
+        why: "It's young enough to still fix its design mistakes — upgrades can carry breaking changes that a mature tool stopped being allowed to make.",
+      },
+      {
+        need: "You now own the SQL competence bar for the whole team",
+        why: "The API is SQL with types — every contributor needs real SQL fluency, and hiring and onboarding must screen for it.",
+      },
+      {
+        need: "You must fill ecosystem gaps yourself",
+        why: "Fewer integrations and answered questions mean the weird edge case is a GitHub issue you file, not a Stack Overflow answer you find.",
+      },
     ],
     tags: ["query-builder", "sql-first", "edge-friendly"],
   },
@@ -344,11 +414,25 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "Correctness-sensitive domains where a data-layer bug is an incident, given the track record",
     ],
     alternatives: [
-      { techId: "prisma", note: "The mainstream migration target: schema-first, better tooling, active development — most 'we're leaving TypeORM' stories end here." },
-      { techId: "drizzle", note: "The migration target for teams who concluded the problem was ORM opacity itself, not just this ORM." },
+      { techId: "prisma", note: "The mainstream migration target: schema-first, better tooling, active development — most 'we're leaving TypeORM' stories end here.", effort: "moderate" },
+      { techId: "drizzle", note: "The migration target for teams who concluded the problem was ORM opacity itself, not just this ORM.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "nestjs", note: "The historical default pairing — years of NestJS docs and codebases assume it, which is exactly why so much of it is still running." },
+    ],
+    commitments: [
+      {
+        need: "You now own defensive testing around the ORM's known trouble spots",
+        why: "Cascades, relation loading, and migration edge cases have a documented bug history — integration tests around them are insurance, not paranoia.",
+      },
+      {
+        need: "You must maintain against a shrinking ecosystem current",
+        why: "Talent and library energy are moving to Prisma and Drizzle — each year, hiring for and integrating with TypeORM costs a little more.",
+      },
+      {
+        need: "You now own keeping the exit affordable",
+        why: "The migration-away conversation will recur every planning cycle — clean entity-layer boundaries are what keep it a project instead of a rewrite.",
+      },
     ],
     tags: ["orm", "decorator-based", "legacy-momentum"],
   },
@@ -402,8 +486,8 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "The team is junior in it and the schedule has no room for the rite-of-passage bugs",
     ],
     alternatives: [
-      { techId: "ef-core", note: "Not a swap — a mirror. If the platform choice is still open, EF Core is the same full-ORM bargain with a decade less legacy; data-access tools only compete inside their own ecosystem." },
-      { techId: "dapper", note: "The pattern to copy, not the library: the JVM equivalent of the micro-ORM move is jOOQ or JdbcTemplate for hot paths alongside Hibernate for writes." },
+      { techId: "ef-core", note: "Not a swap — a mirror. If the platform choice is still open, EF Core is the same full-ORM bargain with a decade less legacy; data-access tools only compete inside their own ecosystem.", effort: "rewrite" },
+      { techId: "dapper", note: "The pattern to copy, not the library: the JVM equivalent of the micro-ORM move is jOOQ or JdbcTemplate for hot paths alongside Hibernate for writes.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "spring-boot", note: "Spring Data JPA is the JVM's default data story — the integration is so complete most teams never see raw Hibernate APIs." },
@@ -412,6 +496,20 @@ export const DATA_ACCESS_TECHS: Tech[] = [
     ],
     frictionWith: [
       { techId: "serverless-functions", note: "Session factories and entity-manager warm-up on every cold start is real latency and real money — the architecture and the library want opposite lifecycles." },
+    ],
+    commitments: [
+      {
+        need: "You now own session-lifecycle expertise as a permanent team skill",
+        why: "Entity states, flush timing, and lazy-loading semantics leak into application design — every hire must internalize them before their code stops surprising you.",
+      },
+      {
+        need: "You now own fetch-strategy tuning as ongoing work",
+        why: "Default lazy loading plus growing data volumes produce N+1 storms — someone must keep watching the generated SQL as the domain model evolves.",
+      },
+      {
+        need: "You must govern every caching layer you enable",
+        why: "Second-level and query caches trade correctness for speed — invalidation scope and cross-instance clustering behavior become your design problem, not Hibernate's.",
+      },
     ],
     tags: ["orm", "full-orm", "jpa", "enterprise"],
   },
@@ -464,12 +562,26 @@ export const DATA_ACCESS_TECHS: Tech[] = [
       "Trivial scripts or tiny services where a driver and a few SQL strings are honestly sufficient",
     ],
     alternatives: [
-      { techId: "django", note: "Cross-category but the real decision: Django's built-in ORM comes with the framework, and choosing Django is choosing its ORM — SQLAlchemy is the default everywhere else in Python." },
-      { techId: "ef-core", note: "Not a swap — the ecosystem-peer comparison: if the platform is still open, EF Core is the nearest equivalent in ambition, with stronger compile-time typing and a less interesting escape hatch." },
+      { techId: "django", note: "Cross-category but the real decision: Django's built-in ORM comes with the framework, and choosing Django is choosing its ORM — SQLAlchemy is the default everywhere else in Python.", effort: "rewrite" },
+      { techId: "ef-core", note: "Not a swap — the ecosystem-peer comparison: if the platform is still open, EF Core is the nearest equivalent in ambition, with stronger compile-time typing and a less interesting escape hatch.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "fastapi", note: "The standard modern Python API stack — FastAPI's dependency injection manages SQLAlchemy sessions cleanly, and 2.0's async support fits its async-first design." },
       { techId: "postgres", note: "Its deepest dialect support and the default pairing for serious Python backends." },
+    ],
+    commitments: [
+      {
+        need: "You now own the session and unit-of-work discipline",
+        why: "When objects flush, expire, and detach is a model every contributor must internalize — most 'SQLAlchemy bugs' are session-lifecycle misunderstandings.",
+      },
+      {
+        need: "You must police pre-2.0 patterns out of new code",
+        why: "Years of 1.x tutorials and codebases mean copy-pasted examples routinely import the old styles — style enforcement is a standing review job.",
+      },
+      {
+        need: "You now own Alembic migration hygiene",
+        why: "Autogenerate produces a draft, not a migration — reviewing diffs, ordering branches, and testing downgrades is process you run for the system's lifetime.",
+      },
     ],
     tags: ["orm", "layered-design", "sql-toolkit"],
   },

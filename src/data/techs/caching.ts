@@ -59,9 +59,9 @@ export const CACHING_TECHS: Tech[] = [
       "The cached data is about to become load-bearing state — if losing it is an outage, you need a database's durability posture, not a cache's",
     ],
     alternatives: [
-      { techId: "in-process-cache", note: "For one instance, or per-instance caching of rarely-changing data — nanosecond reads and no new infrastructure. Graduate to Redis when instance count makes coherence the problem." },
-      { techId: "memcached", note: "If you truly need only get/set at high throughput, Memcached's multi-threaded simplicity is arguably purer — but Redis's ubiquity usually wins anyway." },
-      { techId: "rabbitmq", note: "The honest swap when Redis lists have become your job queue: acknowledgements, dead-letter queues, and delivery guarantees are a broker's actual job." },
+      { techId: "in-process-cache", note: "For one instance, or per-instance caching of rarely-changing data — nanosecond reads and no new infrastructure. Graduate to Redis when instance count makes coherence the problem.", effort: "moderate" },
+      { techId: "memcached", note: "If you truly need only get/set at high throughput, Memcached's multi-threaded simplicity is arguably purer — but Redis's ubiquity usually wins anyway.", effort: "drop-in" },
+      { techId: "rabbitmq", note: "The honest swap when Redis lists have become your job queue: acknowledgements, dead-letter queues, and delivery guarantees are a broker's actual job.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "postgres", note: "The canonical division of labor: Postgres owns truth, Redis absorbs the hot read paths in front of it." },
@@ -76,6 +76,24 @@ export const CACHING_TECHS: Tech[] = [
       {
         techId: "redis-streams",
         note: "Same binary, different architectural commitment: caching is disposable by definition; a stream consumed by other services is load-bearing state. Running both on one instance is exactly how the 'cache' becomes unrestartable.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own an invalidation strategy per cached shape",
+        why: "Every cache is a bet about staleness; someone must decide TTLs and who busts what, when.",
+      },
+      {
+        need: "You now own the scope-creep boundary",
+        why: "The cache will volunteer to be your queue, your locks, and your sessions — someone must decide what's allowed on it before a restart of 'disposable' infrastructure becomes an outage.",
+      },
+      {
+        need: "You must treat memory as a hard budget with an eviction owner",
+        why: "When the dataset outgrows RAM, the eviction policy decides what silently disappears — that choice needs an owner before it's made under load.",
+      },
+      {
+        need: "You now own an HA posture (Sentinel, Cluster, or a managed tier)",
+        why: "Once the cache sits in every request path, a single node is a single point of failure for latency — someone must architect and actually test the failover.",
       },
     ],
     tags: ["distributed-cache", "data-structures", "default-choice"],
@@ -129,12 +147,26 @@ export const CACHING_TECHS: Tech[] = [
       "The team knows Redis and doesn't know this — a second cache technology needs a better reason than benchmark purity",
     ],
     alternatives: [
-      { techId: "redis", note: "The default for a reason: 90% of Memcached's caching ability plus everything it deliberately lacks. Choose Memcached on principle or on throughput math; choose Redis on ecosystem gravity." },
-      { techId: "in-process-cache", note: "If the deployment is a single instance, skip the network cache layer entirely." },
+      { techId: "redis", note: "The default for a reason: 90% of Memcached's caching ability plus everything it deliberately lacks. Choose Memcached on principle or on throughput math; choose Redis on ecosystem gravity.", effort: "drop-in" },
+      { techId: "in-process-cache", note: "If the deployment is a single instance, skip the network cache layer entirely.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "mysql", note: "The classic pairing that scaled the 2000s web — Memcached in front of MySQL is the original cache-aside architecture, still sound." },
       { techId: "monolith", note: "A horizontally scaled monolith with a dumb shared cache is a proven, boring, fast architecture." },
+    ],
+    commitments: [
+      {
+        need: "You now own cold-start and stampede protection",
+        why: "No persistence means every restart is an empty cache and a thundering herd at the database — request coalescing and warm-up are your application's job.",
+      },
+      {
+        need: "You now own cluster topology in the client",
+        why: "Distribution is client-side consistent hashing — adding a node, choosing a hashing scheme, and keeping client configs in sync across services is your work, not the server's.",
+      },
+      {
+        need: "You must plan for the second-system moment",
+        why: "The day you need pub/sub, data structures, or persistence, you'll be running Redis alongside — decide the boundary now or plan the migration later.",
+      },
     ],
     tags: ["pure-cache", "multi-threaded", "deliberately-simple"],
   },
@@ -188,8 +220,8 @@ export const CACHING_TECHS: Tech[] = [
       "The cached working set is large — duplicating gigabytes into every instance's heap is the expensive way to buy incoherence",
     ],
     alternatives: [
-      { techId: "redis", note: "The graduation path when instances multiply: one shared copy, one invalidation, consistency across the fleet — paid for with a network hop and an infrastructure dependency." },
-      { techId: "memcached", note: "Same graduation logic when all you need shared is get/set." },
+      { techId: "redis", note: "The graduation path when instances multiply: one shared copy, one invalidation, consistency across the fleet — paid for with a network hop and an infrastructure dependency.", effort: "moderate" },
+      { techId: "memcached", note: "Same graduation logic when all you need shared is get/set.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "monolith", note: "One process makes in-process caching complete, coherent, and free — often removing the need for cache infrastructure entirely." },
@@ -203,6 +235,20 @@ export const CACHING_TECHS: Tech[] = [
       {
         techId: "redis",
         note: "The nanosecond dictionary and the millisecond network service are different layers, not different brands. In-process is speed without coherence; Redis is coherence at network price. Deciding which property the data needs IS the caching decision.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own a staleness window per cached item",
+        why: "There is no cross-instance invalidation — every TTL is a statement about how long users may see the old value, and someone must make it consciously.",
+      },
+      {
+        need: "You must treat cache size as part of your app's memory profile",
+        why: "The cache competes with your application for heap — unbounded growth surfaces as GC pressure and OOMs in the app's own vitals, not on a cache dashboard.",
+      },
+      {
+        need: "You now own recognizing the graduation trigger",
+        why: "The first 'sometimes it shows the old value' report after scaling out means this layer is architecturally done for that data — that's a migration signal, not a TTL-tuning exercise.",
       },
     ],
     tags: ["zero-infrastructure", "first-cache", "single-instance"],
@@ -258,8 +304,8 @@ export const CACHING_TECHS: Tech[] = [
       "Correctness requires read-your-writes freshness and you can't engineer around purge latency",
     ],
     alternatives: [
-      { techId: "static-edge", note: "The logical conclusion: if the whole site can be built ahead of time, host it at the edge and stop caching a dynamic origin — no invalidation problem because there's no origin to be stale against." },
-      { techId: "redis", note: "Not a substitute but the next layer inward: when responses are personalized and the CDN can't help, cache the data (not the HTTP response) behind your app." },
+      { techId: "static-edge", note: "The logical conclusion: if the whole site can be built ahead of time, host it at the edge and stop caching a dynamic origin — no invalidation problem because there's no origin to be stale against.", effort: "moderate" },
+      { techId: "redis", note: "Not a substitute but the next layer inward: when responses are personalized and the CDN can't help, cache the data (not the HTTP response) behind your app.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "rest", note: "REST's GET/URL discipline is what makes responses cacheable at all — HTTP caching is REST's home-field advantage." },
@@ -273,6 +319,24 @@ export const CACHING_TECHS: Tech[] = [
       {
         techId: "redis",
         note: "'We have a CDN, why add Redis?' (and vice versa) confuses layers: the CDN caches whole HTTP responses for anonymous traffic before requests reach you; Redis caches data inside your infrastructure for logic the edge can't run. Read-heavy public products usually want both — they're sequential layers, not rivals.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own HTTP cache-correctness as a security discipline",
+        why: "A wrong Vary or a cached Set-Cookie serves one user's private response to another — cache-header review is incident prevention, not style feedback.",
+      },
+      {
+        need: "You must design a purge strategy per content type",
+        why: "Invalidation propagates across hundreds of edge nodes in seconds-to-minutes — deploys, price changes, and takedowns each need a plan for that window.",
+      },
+      {
+        need: "You now own cache-key hygiene",
+        why: "Query strings, headers, and cookies silently fragment or poison the cache — what counts as 'the same response' is a decision you encode and maintain.",
+      },
+      {
+        need: "You must keep observability into a cache you don't run",
+        why: "Hit ratios and stale serves happen on infrastructure you can't log into — response-header telemetry and provider analytics are your only instruments, so wire them in early.",
       },
     ],
     tags: ["edge", "http-caching", "highest-leverage"],

@@ -89,6 +89,38 @@ for (const c of CATEGORIES) {
   }
 }
 
+// System-thinking data: every alternatives edge should carry a migration
+// effort; every tech should carry an obligations ledger; context modifiers
+// must have sane deltas.
+for (const t of ALL_TECHS) {
+  for (const a of t.alternatives) {
+    if (!a.effort) {
+      console.log(`ISSUE: ${t.id} -> ${a.techId} alternatives edge missing effort`);
+      issues++;
+    }
+  }
+  if ((t.commitments ?? []).length < 2) {
+    console.log(`ISSUE: ${t.id} has ${t.commitments?.length ?? 0} commitments (want ≥2)`);
+    issues++;
+  }
+}
+{
+  const { CONTEXT_MODIFIERS } = await import("../src/data/context");
+  for (const m of CONTEXT_MODIFIERS) {
+    for (const [dim, d] of Object.entries(m.delta)) {
+      if (d === 0 || Math.abs(d ?? 0) > 6) {
+        console.log(`ISSUE: modifier ${m.techId}/${dim} delta ${d} out of sane range`);
+        issues++;
+      }
+    }
+    if (!m.why) {
+      console.log(`ISSUE: modifier ${m.techId} missing rationale`);
+      issues++;
+    }
+  }
+  console.log(`Context modifiers: ${CONTEXT_MODIFIERS.length}`);
+}
+
 const alt = ALL_TECHS.reduce((n, t) => n + t.alternatives.length, 0);
 const pairs = ALL_TECHS.reduce((n, t) => n + (t.pairsWellWith?.length ?? 0), 0);
 const fric = ALL_TECHS.reduce((n, t) => n + (t.frictionWith?.length ?? 0), 0);
@@ -98,6 +130,11 @@ const conf = ALL_TECHS.reduce(
 );
 const withSubs = ALL_TECHS.filter((t) => t.subScores).length;
 const withNative = ALL_TECHS.filter((t) => t.nativeScores).length;
+const commitmentCount = ALL_TECHS.reduce(
+  (n, t) => n + (t.commitments?.length ?? 0),
+  0,
+);
+console.log(`Commitments: ${commitmentCount} across ${ALL_TECHS.length} techs`);
 
 console.log(
   `\nEdges — alternatives: ${alt}, pairsWellWith: ${pairs}, frictionWith: ${fric}, notInterchangeable: ${conf}`,

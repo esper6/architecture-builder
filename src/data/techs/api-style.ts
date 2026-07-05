@@ -65,10 +65,10 @@ export const API_STYLE_TECHS: Tech[] = [
       "Service-to-service chatter inside your own estate is the dominant traffic — typed binary contracts serve that better",
     ],
     alternatives: [
-      { techId: "graphql", note: "Switch when divergent client data needs are causing real endpoint sprawl — not before, because you'll trade HTTP caching away for it." },
-      { techId: "grpc", note: "For internal service-to-service calls where you control both ends and want typed contracts and speed." },
-      { techId: "trpc", note: "If both ends are TypeScript in one repo, tRPC deletes the API-contract layer entirely." },
-      { techId: "soap", note: "Only when the counterparty demands it — large B2B/EDI estates still speak WSDL and will for years." },
+      { techId: "graphql", note: "Switch when divergent client data needs are causing real endpoint sprawl — not before, because you'll trade HTTP caching away for it.", effort: "moderate" },
+      { techId: "grpc", note: "For internal service-to-service calls where you control both ends and want typed contracts and speed.", effort: "moderate" },
+      { techId: "trpc", note: "If both ends are TypeScript in one repo, tRPC deletes the API-contract layer entirely.", effort: "moderate" },
+      { techId: "soap", note: "Only when the counterparty demands it — large B2B/EDI estates still speak WSDL and will for years.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "cdn-cache", note: "Cacheable GETs with proper headers turn a CDN into your read-scaling tier for free." },
@@ -76,6 +76,20 @@ export const API_STYLE_TECHS: Tech[] = [
     ],
     notInterchangeableWith: [
       { techId: "websockets", note: "REST is request/response semantics; WebSockets is a persistent push transport. 'Should we use WebSockets instead of REST?' is usually a category error — most systems need both, for different traffic." },
+    ],
+    commitments: [
+      {
+        need: "You now own contract fidelity between the OpenAPI spec and the code",
+        why: "Nothing in the protocol enforces the contract — either the spec is generated from code and gated in CI, or it quietly becomes fiction.",
+      },
+      {
+        need: "You now own a versioning and deprecation policy",
+        why: "Fixed response shapes mean breaking changes break clients you can't see — a public REST contract is forever until you run a deliberate deprecation process.",
+      },
+      {
+        need: "You must treat cache headers as correctness, not configuration",
+        why: "HTTP caching is the superpower you chose this for — and a wrong Cache-Control or missing Vary serves stale or private responses at CDN scale.",
+      },
     ],
     tags: ["default-choice", "http", "public-api"],
   },
@@ -134,9 +148,9 @@ export const API_STYLE_TECHS: Tech[] = [
       "The team hasn't internalized N+1 batching and query-cost controls — the failure modes are subtle and arrive under load",
     ],
     alternatives: [
-      { techId: "rest", note: "If the client diversity that justifies GraphQL never materialized, plain REST returns the caching and simplicity you gave up." },
-      { techId: "trpc", note: "If 'typed client calls' was the actual appeal and everything is TypeScript, tRPC delivers that with none of the resolver machinery." },
-      { techId: "grpc", note: "If the consumers are your own services rather than UIs, typed RPC fits better than a query language." },
+      { techId: "rest", note: "If the client diversity that justifies GraphQL never materialized, plain REST returns the caching and simplicity you gave up.", effort: "moderate" },
+      { techId: "trpc", note: "If 'typed client calls' was the actual appeal and everything is TypeScript, tRPC delivers that with none of the resolver machinery.", effort: "moderate" },
+      { techId: "grpc", note: "If the consumers are your own services rather than UIs, typed RPC fits better than a query language.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "react", note: "The ecosystem GraphQL grew up in — Apollo/Relay-style clients with normalized caches are mature here." },
@@ -147,6 +161,24 @@ export const API_STYLE_TECHS: Tech[] = [
     ],
     notInterchangeableWith: [
       { techId: "grpc", note: "Both are 'not REST', so they get compared — but gRPC is typed RPC between services you control, GraphQL is query flexibility for client UIs. Different consumers, different problems." },
+    ],
+    commitments: [
+      {
+        need: "You now own per-field authorization",
+        why: "Clients compose their own queries, so 'is this endpoint allowed' becomes 'is every field in this query allowed'.",
+      },
+      {
+        need: "You now need query cost controls (depth limits, complexity budgets)",
+        why: "The flexibility you gave clients includes the flexibility to write a query that takes down the database.",
+      },
+      {
+        need: "You now own N+1 batching infrastructure",
+        why: "Resolvers execute per node — without DataLoader-style batching, one composite query fans out into hundreds of database round-trips.",
+      },
+      {
+        need: "You now own the caching story HTTP used to give you for free",
+        why: "Everything is a POST to one endpoint, so client caches, persisted queries, and cache hints are systems you build and maintain.",
+      },
     ],
     tags: ["query-language", "bff", "client-driven"],
   },
@@ -205,9 +237,9 @@ export const API_STYLE_TECHS: Tech[] = [
       "A small monolith-plus-SPA system — there's no service-to-service traffic to optimize",
     ],
     alternatives: [
-      { techId: "rest", note: "At the public edge, REST's universality beats gRPC's speed — many estates run gRPC inside and REST outside." },
-      { techId: "graphql", note: "If the consumers are diverse client UIs rather than services, a query layer serves them better than fixed RPC methods." },
-      { techId: "websockets", note: "For browser-facing streaming specifically — gRPC streams don't reach browsers without the proxy layer." },
+      { techId: "rest", note: "At the public edge, REST's universality beats gRPC's speed — many estates run gRPC inside and REST outside.", effort: "moderate" },
+      { techId: "graphql", note: "If the consumers are diverse client UIs rather than services, a query layer serves them better than fixed RPC methods.", effort: "rewrite" },
+      { techId: "websockets", note: "For browser-facing streaming specifically — gRPC streams don't reach browsers without the proxy layer.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "microservices", note: "The canonical pairing: typed contracts and codegen claw back the compile-time safety the network took away." },
@@ -216,6 +248,24 @@ export const API_STYLE_TECHS: Tech[] = [
     ],
     notInterchangeableWith: [
       { techId: "graphql", note: "Commonly confused because both are 'the modern alternative to REST'. gRPC optimizes calls between services you control; GraphQL optimizes flexibility for client UIs you don't. Swapping one in for the other's job hurts." },
+    ],
+    commitments: [
+      {
+        need: "You now own L7-aware load balancing",
+        why: "Long-lived HTTP/2 connections pin traffic to whichever instance accepted them — naive L4 balancing sends everything down one pipe.",
+      },
+      {
+        need: "You now own proto governance and field-number discipline",
+        why: "The .proto file is a cross-team contract; a reused field number or careless rename corrupts messages silently across every consumer.",
+      },
+      {
+        need: "You need a debugging toolchain beyond curl",
+        why: "Binary frames mean grpcurl, server reflection, and interceptor logging are day-one infrastructure, not nice-to-haves.",
+      },
+      {
+        need: "You must run a translation layer for any browser consumer",
+        why: "Browsers can't speak native gRPC — gRPC-Web plus an Envoy-class proxy becomes a permanent piece of your edge.",
+      },
     ],
     tags: ["rpc", "binary", "service-to-service", "streaming"],
   },
@@ -275,14 +325,28 @@ export const API_STYLE_TECHS: Tech[] = [
       "Teams own the frontend and backend separately and want an explicit contract between them",
     ],
     alternatives: [
-      { techId: "rest", note: "The moment a non-TS consumer appears, expose REST — many teams run tRPC for their own frontend and REST for everyone else." },
-      { techId: "graphql", note: "When client diversity grows beyond one TS app, GraphQL offers typed flexibility that doesn't require TypeScript on the client." },
-      { techId: "grpc", note: "The polyglot equivalent of the same instinct: typed contracts with codegen instead of shared source types." },
+      { techId: "rest", note: "The moment a non-TS consumer appears, expose REST — many teams run tRPC for their own frontend and REST for everyone else.", effort: "moderate" },
+      { techId: "graphql", note: "When client diversity grows beyond one TS app, GraphQL offers typed flexibility that doesn't require TypeScript on the client.", effort: "moderate" },
+      { techId: "grpc", note: "The polyglot equivalent of the same instinct: typed contracts with codegen instead of shared source types.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "nextjs", note: "The native habitat: one monorepo, one deploy, typed calls from server component to API procedure." },
       { techId: "prisma", note: "Database types flow through Prisma into tRPC procedures out to the client — the full-stack TS type pipeline." },
       { techId: "react", note: "TanStack Query integration gives typed hooks per procedure out of the box." },
+    ],
+    commitments: [
+      {
+        need: "You now own the monorepo discipline that makes shared types work",
+        why: "The contract is source-level type inference — split the repos or version the two ends independently and the entire premise collapses.",
+      },
+      {
+        need: "You must guard the TypeScript-only boundary",
+        why: "The first mobile team, Python service, or partner integration needs a second, parallel API — someone has to see that coming and plan the seam.",
+      },
+      {
+        need: "You now own build-time coupling between frontend and backend",
+        why: "Every server type change recompiles the client — the two ends must be reviewed and shipped as one unit, which is a process commitment, not just tooling.",
+      },
     ],
     tags: ["typescript", "monorepo", "end-to-end-types"],
   },
@@ -338,8 +402,8 @@ export const API_STYLE_TECHS: Tech[] = [
       "Consumers are browsers or mobile apps — the XML/tooling overhead has no payoff there",
     ],
     alternatives: [
-      { techId: "rest", note: "The migration target for SOAP estates being modernized — usually via a REST facade in front of the SOAP service, strangler-style, not a rewrite." },
-      { techId: "grpc", note: "The spiritual successor for contract-first, typed, machine-to-machine integration — protobuf is WSDL's discipline with a fraction of the weight." },
+      { techId: "rest", note: "The migration target for SOAP estates being modernized — usually via a REST facade in front of the SOAP service, strangler-style, not a rewrite.", effort: "rewrite" },
+      { techId: "grpc", note: "The spiritual successor for contract-first, typed, machine-to-machine integration — protobuf is WSDL's discipline with a fraction of the weight.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "The .NET world carries the largest WCF/SOAP legacy; CoreWCF exists precisely to keep those estates alive on modern runtimes." },
@@ -347,6 +411,20 @@ export const API_STYLE_TECHS: Tech[] = [
     ],
     notInterchangeableWith: [
       { techId: "rest", note: "Teams treat 'replace SOAP with REST' as a format swap. It isn't: WS-Security, reliable messaging, and formal contracts have no direct REST equivalent — replacing them means re-solving those problems, not just re-serializing." },
+    ],
+    commitments: [
+      {
+        need: "You now own a shrinking-skills succession plan",
+        why: "WS-* expertise is retiring faster than it's being replaced — every year, the person who can debug a WS-Security fault gets harder to hire.",
+      },
+      {
+        need: "You must keep aging toolchains alive through platform upgrades",
+        why: "Framework support is in maintenance mode (CoreWCF, JAX-WS) — every runtime upgrade now includes 'does our SOAP stack still work' as a standing test item.",
+      },
+      {
+        need: "You now own certificate and WSDL lifecycle coordination with counterparties",
+        why: "Message-level security means key rotations, WSDL revisions, and schema changes are multi-party projects with partner calendars attached.",
+      },
     ],
     tags: ["enterprise", "b2b", "contract-first", "legacy"],
   },
@@ -407,8 +485,8 @@ export const API_STYLE_TECHS: Tech[] = [
       "The team wants it for regular CRUD calls — request/response over a socket re-invents HTTP badly",
     ],
     alternatives: [
-      { techId: "rest", note: "Short-interval polling of a cacheable REST endpoint is unglamorous and covers a surprising share of 'real-time' requirements with zero new infrastructure." },
-      { techId: "grpc", note: "For service-to-service streaming (not browsers), gRPC streams give you push with typed contracts included." },
+      { techId: "rest", note: "Short-interval polling of a cacheable REST endpoint is unglamorous and covers a surprising share of 'real-time' requirements with zero new infrastructure.", effort: "moderate" },
+      { techId: "grpc", note: "For service-to-service streaming (not browsers), gRPC streams give you push with typed contracts included.", effort: "moderate" },
     ],
     pairsWellWith: [
       { techId: "rest", note: "The standard architecture: REST for commands and queries, a socket/stream for the live updates — each transport doing the job it's shaped for." },
@@ -419,6 +497,24 @@ export const API_STYLE_TECHS: Tech[] = [
     ],
     notInterchangeableWith: [
       { techId: "rest", note: "A push transport and a request/response API style solve different halves of client communication. Systems that moved all traffic onto sockets rebuilt routing, caching, and error semantics by hand — HTTP already had them." },
+    ],
+    commitments: [
+      {
+        need: "You now own connection-state infrastructure",
+        why: "Every open socket is server memory pinned to an instance — sticky sessions or a broker backplane, plus a drain strategy for every deploy.",
+      },
+      {
+        need: "You now own a fan-out backplane",
+        why: "Broadcasting to clients spread across N servers isn't built in — Redis pub/sub or a broker becomes mandatory the day you scale past one instance.",
+      },
+      {
+        need: "You must design your own message protocol and its versioning",
+        why: "The pipe carries untyped frames — message shapes, contracts, and evolution rules are conventions you invent and enforce yourself.",
+      },
+      {
+        need: "You now own reconnection and missed-message recovery",
+        why: "Networks drop and deploys restart — clients need resume logic and the server needs replay or gap detection, all of it application code.",
+      },
     ],
     tags: ["real-time", "push", "transport"],
   },

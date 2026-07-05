@@ -61,19 +61,40 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "paas-containers",
         note: "If the app fits in a container with no daemon or networking exotica, this trades control you weren't using for operations you no longer do.",
+        effort: "moderate",
       },
       {
         techId: "kubernetes",
         note: "When you're running a whole fleet of services on VMs and have rebuilt half an orchestrator in shell scripts — the real thing exists.",
+        effort: "moderate",
       },
       {
         techId: "serverless-functions",
         note: "For spiky or event-shaped workloads, an idle VM is money on fire — per-use billing fits the shape.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
       { techId: "monolith", note: "One well-tended VM (or a small load-balanced pair) runs a monolith for years — the classic boring stack." },
       { techId: "postgres", note: "Self-managing a database is the canonical 'I need a real machine' workload — disks, tuning, and backups under your control." },
+    ],
+    commitments: [
+      {
+        need: "You now own a patching cadence, forever, on every box",
+        why: "OS updates, CVE responses, and certificate renewals never stop — an unpatched fleet doesn't announce itself; it just quietly becomes the audit finding or the breach.",
+      },
+      {
+        need: "You now need IaC and image discipline before drift arrives",
+        why: "Rebuildability is a practice, not a default — every hand-edit on a live server is a debt entry, and the snowflake you can't recreate is already forming.",
+      },
+      {
+        need: "You now build and maintain the deploy machinery a PaaS includes",
+        why: "Zero-downtime deploys, health-based restarts, TLS automation, and rollbacks are engineering projects here — and each one keeps needing an owner after it ships.",
+      },
+      {
+        need: "You now do capacity planning ahead of demand",
+        why: "Nothing scales unless you built the scaling — sizing, autoscaling groups, and headroom for the traffic spike are decisions made in advance or incidents managed live.",
+      },
     ],
     tags: ["baseline", "full-control", "iaas"],
   },
@@ -131,14 +152,17 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "vms",
         note: "Drop down when you need the OS — or when steady-state economics at scale justify taking the patching burden back.",
+        effort: "moderate",
       },
       {
         techId: "kubernetes",
         note: "Graduate when service count and team count make orchestration-as-a-product worth operating — not because K8s is 'more professional'.",
+        effort: "moderate",
       },
       {
         techId: "serverless-functions",
         note: "For event-shaped, bursty work, functions bill closer to actual use than even scale-to-zero containers.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -150,6 +174,20 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "kubernetes",
         note: "'We run containers' describes both and distinguishes nothing. A PaaS is a service that operates the platform for you; Kubernetes is a platform you operate. Same container image, completely different second job.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own an image pipeline: base images, CVE scanning, registry hygiene",
+        why: "The platform patches its hosts, not your containers — a stale base image is your vulnerability, and 'rebuild and redeploy everything monthly' is a process someone must run.",
+      },
+      {
+        need: "You now keep every app twelve-factor clean, permanently",
+        why: "Ephemeral disks and restart-at-will are the platform's contract — the first engineer who writes to local disk or holds state in memory breaks it, so statelessness is a standing code-review concern.",
+      },
+      {
+        need: "You now watch the convenience margin as load grows",
+        why: "Per-compute pricing crosses VM economics at sustained utilization — someone must know where that line is for your workload, or the platform decides your infrastructure budget.",
       },
     ],
     tags: ["sweet-spot", "managed", "containers"],
@@ -208,14 +246,17 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "paas-containers",
         note: "The honest answer below the many-services threshold — same containers, none of the platform ownership.",
+        effort: "moderate",
       },
       {
         techId: "vms",
         note: "A small static fleet without orchestration needs can live on plain VMs with simpler failure modes.",
+        effort: "moderate",
       },
       {
         techId: "serverless-functions",
         note: "For event-driven workloads, functions skip the cluster entirely — no nodes, no scheduling, no YAML.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -230,6 +271,24 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "paas-containers",
         note: "An orchestration platform you operate versus a service that operates it for you. Both 'run containers'; only one gives your team a second job. Comparing them on features misses the real line item: platform ownership.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own YAML sprawl governance",
+        why: "Manifests, Helm charts, and operators multiply; without conventions the cluster config becomes its own legacy codebase.",
+      },
+      {
+        need: "You now upgrade clusters on Kubernetes' release clock, not yours",
+        why: "Versions fall out of support fast and API deprecations break live manifests — skipping upgrades isn't deferral, it's compounding a forced migration.",
+      },
+      {
+        need: "You now fund platform engineering as a standing function",
+        why: "The cluster is an internal product: it needs owners, on-call, a roadmap, and paved-road docs — a K8s estate maintained 'on the side' is the least-tended critical system you have.",
+      },
+      {
+        need: "You now actively manage cluster cost",
+        why: "Requests, limits, bin-packing, and idle-node headroom decide the bill — an untuned cluster quietly costs multiples of the workloads it runs.",
       },
     ],
     tags: ["orchestration", "platform", "fleet-scale"],
@@ -288,10 +347,12 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "paas-containers",
         note: "Scale-to-zero container platforms (Cloud Run class) cover much of the same ground without the execution limits — the middle path.",
+        effort: "moderate",
       },
       {
         techId: "vms",
         note: "At steady heavy load, boring always-on compute is cheaper and free of cold starts.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -301,6 +362,24 @@ export const HOSTING_TECHS: Tech[] = [
     ],
     frictionWith: [
       { techId: "hibernate", note: "Heavyweight ORM warm-up per cold start is real money and real latency — lightweight data access wins in functions." },
+    ],
+    commitments: [
+      {
+        need: "You now monitor cost per invocation as an architecture signal",
+        why: "A retry loop, a chatty fan-out, or plain growth turns pay-per-use into the expensive option overnight — billing alarms are part of the design, not the finance team's problem.",
+      },
+      {
+        need: "You now manage cold starts on every path that has an SLA",
+        why: "Provisioned concurrency, runtime slimming, and dependency diets are permanent tuning work — the platform chooses your worst-case latency unless you keep paying attention.",
+      },
+      {
+        need: "You now debug distributed by default",
+        why: "Every feature spans functions, queues, and managed-service consoles — correlation IDs and tracing are prerequisites here, because there is no single process to attach to.",
+      },
+      {
+        need: "You now test against a platform you can't run locally",
+        why: "Emulators diverge from the real thing, so CI needs actual cloud environments — provisioning, isolating, and paying for them is part of the development loop now.",
+      },
     ],
     tags: ["pay-per-use", "event-driven", "faas"],
   },
@@ -357,10 +436,12 @@ export const HOSTING_TECHS: Tech[] = [
       {
         techId: "paas-containers",
         note: "When the frontend needs a real server (SSR, per-request logic), it becomes an app like any other — host it like one.",
+        effort: "moderate",
       },
       {
         techId: "serverless-functions",
         note: "The standard companion for the dynamic 10%: static shell from the CDN, API calls to functions.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -370,6 +451,20 @@ export const HOSTING_TECHS: Tech[] = [
     ],
     frictionWith: [
       { techId: "htmx", note: "htmx's entire model is a server rendering HTML per request — static hosting has no server to render it. Opposite bets about where HTML comes from." },
+    ],
+    commitments: [
+      {
+        need: "You now own the build pipeline as your entire deployment surface",
+        why: "There is no server to fix, so a broken build IS an outage of deploys — dependency churn, build-tool upgrades, and build-minute costs are the ops work that remains.",
+      },
+      {
+        need: "You now adjudicate every dynamic feature's new home",
+        why: "Auth, forms, and personalization can't live in static files — each new requirement reopens the 'API, edge function, or don't' question, and the simplicity boundary erodes one decision at a time.",
+      },
+      {
+        need: "You now track what the convenience platform wraps around the standard",
+        why: "The files are portable; the redirect rules, build config, and preview pipeline are Vercel/Netlify dialect — and their pricing tiers, not your traffic, decide when 'near-free' ends.",
+      },
     ],
     tags: ["cdn", "static", "zero-ops"],
   },

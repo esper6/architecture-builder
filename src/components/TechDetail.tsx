@@ -1,8 +1,9 @@
-import type { Relation, Tech, TechId } from "../data/types";
-import { DIMENSIONS } from "../data/dimensions";
+import type { OrgContext, Relation, Tech, TechId } from "../data/types";
+import { DIMENSION_MAP, DIMENSIONS } from "../data/dimensions";
 import { CATEGORY_MAP } from "../data/categories";
 import { getTech } from "../data";
-import { ecosystemName } from "../lib/scoring";
+import { ecosystemName, effective } from "../lib/scoring";
+import { EffortBadge } from "./EffortBadge";
 
 function RelationList({
   relations,
@@ -21,6 +22,7 @@ function RelationList({
               {target.name}
             </button>
             <span className="pill">{CATEGORY_MAP[target.category].name}</span>
+            <EffortBadge effort={r.effort} />
             <p className="rel-note">{r.note}</p>
           </div>
         );
@@ -32,11 +34,14 @@ function RelationList({
 /** Full profile of one technology — the knowledge base page for it. */
 export function TechDetail({
   tech,
+  ctx,
   onNavigate,
 }: {
   tech: Tech;
+  ctx?: OrgContext;
   onNavigate: (id: TechId) => void;
 }) {
+  const eff = ctx ? effective(tech, ctx) : null;
   return (
     <div className="tech-detail">
       <div>
@@ -52,6 +57,27 @@ export function TechDetail({
       <p className="secondary" style={{ margin: 0 }}>
         {tech.description}
       </p>
+
+      {eff && eff.applied.length > 0 && (
+        <div className="ctx-card">
+          <p className="section-label">In your org context</p>
+          <ul className="ctx-adjustments">
+            {eff.applied.map((m, i) => (
+              <li key={i}>
+                <span className="ctx-deltas">
+                  {Object.entries(m.delta)
+                    .map(
+                      ([dim, d]) =>
+                        `${DIMENSION_MAP[dim as keyof typeof DIMENSION_MAP].label} ${d! > 0 ? "+" : ""}${d}`,
+                    )
+                    .join(", ")}
+                </span>{" "}
+                — {m.why}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div>
         <p className="section-label">Scores (relative to this category)</p>
@@ -177,6 +203,20 @@ export function TechDetail({
           </ul>
         </div>
       </div>
+
+      {(tech.commitments ?? []).length > 0 && (
+        <div>
+          <p className="section-label">What choosing it signs you up for</p>
+          <ul className="commitment-list">
+            {tech.commitments!.map((c, i) => (
+              <li key={i}>
+                <strong>{c.need}</strong>
+                <span className="muted"> — {c.why}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {tech.alternatives.length > 0 && (
         <div>

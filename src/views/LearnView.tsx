@@ -70,6 +70,39 @@ const ADRS: Adr[] = [
     consequences:
       "The core lesson — 'best' is a function of your constraints — is enacted rather than stated: the same catalog produces different winners under different weights, visibly. The cost is that users must engage with the sliders to get value; the presets exist to make that first engagement one click.",
   },
+  {
+    id: "ADR-006",
+    title: "Org context as visible modifiers, not a hidden model",
+    status: "Accepted",
+    context:
+      "Several scores genuinely flip with org shape — Kubernetes is operationally reckless for 5 devs and table stakes behind a platform team. Baking this into a hidden scoring model would make rankings more 'accurate' and completely unexplainable, violating the same principle as ADR-005.",
+    decision:
+      "Context modifiers are plain data: tech + condition → dimension deltas + a written rationale. Every adjusted number is marked (°) and shows its reasoning on hover; every rank shift shows a ▲/▼ badge.",
+    consequences:
+      "The user can audit every adjustment — the mechanism teaches Conway's Law instead of just applying it. The cost is coarseness: three context factors with hand-authored deltas, not a calibrated model. That's the right trade for a teaching tool; it would be the wrong one for a procurement tool.",
+  },
+  {
+    id: "ADR-007",
+    title: "Emergent stack properties: floors, not averages",
+    status: "Accepted",
+    context:
+      "Averaging layer scores implies a great database compensates for an unmaintainable message broker. It doesn't. Operational load, type safety, performance, scalability, and maturity are weakest-link properties: the worst layer sets the system's value.",
+    decision:
+      "The stack profile computes floor dimensions as the minimum across layers (with the culprit named) and accumulation dimensions (velocity, learning, ecosystem) as averages. The UI charts both the naive average and the emergent profile so the gap itself is visible.",
+    consequences:
+      "Stack scores drop — correctly. A single exotic choice now visibly drags the whole system, which is exactly how production behaves. The simplification (pure min, no interaction effects like caches masking slow databases) is acknowledged in the UI copy; modeling interactions was judged not worth the explainability cost.",
+  },
+  {
+    id: "ADR-008",
+    title: "Challenges validate with the production engine, not an answer key",
+    status: "Accepted",
+    context:
+      "Challenge exercises need pass/fail criteria. A hand-authored answer key per challenge would drift from the scoring engine every time the catalog changes, and would quietly imply there is exactly one right stack.",
+    decision:
+      "Challenges declare constraints (overall fit, floors on the emergent profile, warning budgets, required layers) and are evaluated live by the same analyzeStack call the Stack Builder renders.",
+    consequences:
+      "Any stack satisfying the constraints passes — there are many right answers, which is the point. Catalog changes automatically propagate to challenge difficulty (a risk: a rebalance could make a challenge trivial or impossible, so the audit script should eventually assert each challenge remains solvable).",
+  },
 ];
 
 export function LearnView() {
@@ -96,6 +129,41 @@ export function LearnView() {
           <strong>commonly-confused pairs</strong> (things that look
           interchangeable and aren't — Kafka vs RabbitMQ is the canonical
           example). The Swap Map tab navigates these edges directly.
+        </p>
+      </div>
+
+      <div className="card" style={{ marginTop: "1.5rem" }}>
+        <h2>Thinking in systems</h2>
+        <p className="secondary">
+          <strong>Emergence beats averaging.</strong> A stack's properties are
+          not the mean of its parts: your pager load is set by the most
+          operationally demanding layer, end-to-end type safety by the weakest
+          seam, throughput by the bottleneck. The Stack Builder charts the
+          naive average next to the emergent (weakest-link) profile — the gap
+          between those two lines is where systems intuition lives.
+        </p>
+        <p className="secondary">
+          <strong>Conway's Law is an input.</strong> Systems mirror the
+          communication structure of the org that builds them, so "best tech"
+          depends on who's building: Kubernetes is reckless for five devs and
+          table stakes behind a platform team; guardrail-heavy frameworks that
+          slow three developers standardize thirty. The org-context row applies
+          these flips as visible, explained adjustments (marked °).
+        </p>
+        <p className="secondary">
+          <strong>Every choice is a subscription, not a purchase.</strong>{" "}
+          Choosing Kafka isn't acquiring a message log — it's subscribing to
+          partition-key design, consumer-lag monitoring, and schema governance
+          forever. The obligations ledger totals what your stack signs the team
+          up for; seniors carry this list in their heads.
+        </p>
+        <p className="secondary" style={{ marginBottom: 0 }}>
+          <strong>Architecture is a verb.</strong> The stack that's right today
+          meets Traffic ×10, Team ×5, and a compliance regime tomorrow. The
+          stress lens shows which layers absorb each future and which crack —
+          and the swap edges' migration-effort ratings (drop-in / migration /
+          rewrite) price the exits. Good architecture isn't the optimal
+          snapshot; it's the position with the cheapest good moves left.
         </p>
       </div>
 

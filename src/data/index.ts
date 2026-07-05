@@ -1,4 +1,10 @@
-import type { CategoryId, Relation, Tech, TechId } from "./types";
+import type {
+  CategoryId,
+  MigrationEffort,
+  Relation,
+  Tech,
+  TechId,
+} from "./types";
 import { ARCHITECTURE_TECHS } from "./techs/architecture";
 import { FRONTEND_TECHS } from "./techs/frontend";
 import { BACKEND_TECHS } from "./techs/backend";
@@ -38,6 +44,7 @@ export function techsIn(category: CategoryId): Tech[] {
 export interface ReverseEdge {
   from: Tech;
   note: string;
+  effort?: MigrationEffort;
 }
 
 /** Techs that list `id` among their alternatives — i.e. things `id` can replace. */
@@ -46,7 +53,7 @@ export function replacementTargets(id: TechId): ReverseEdge[] {
     .flatMap((t) =>
       (t.alternatives ?? [])
         .filter((a) => a.techId === id)
-        .map((a) => ({ from: t, note: a.note })),
+        .map((a) => ({ from: t, note: a.note, effort: a.effort })),
     );
 }
 

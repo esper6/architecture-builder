@@ -51,16 +51,30 @@ export const FRONTEND_TECHS: Tech[] = [
       "The team is backend-heavy and nobody wants to own a JS build pipeline",
     ],
     alternatives: [
-      { techId: "vue", note: "Same component model with more decisions made for you and a gentler curve; smaller ecosystem and hiring pool." },
-      { techId: "angular", note: "When you'd rather have one prescribed way to do everything than assemble your own stack." },
-      { techId: "svelte", note: "When bundle size and runtime performance matter more than ecosystem depth." },
-      { techId: "nextjs", note: "React plus the missing framework: routing, SSR, and data fetching decided for you — and a server to run." },
-      { techId: "htmx", note: "The 'do we need a SPA at all?' option — server-rendered HTML with sprinkles of interactivity." },
+      { techId: "vue", note: "Same component model with more decisions made for you and a gentler curve; smaller ecosystem and hiring pool.", effort: "rewrite" },
+      { techId: "angular", note: "When you'd rather have one prescribed way to do everything than assemble your own stack.", effort: "rewrite" },
+      { techId: "svelte", note: "When bundle size and runtime performance matter more than ecosystem depth.", effort: "rewrite" },
+      { techId: "nextjs", note: "React plus the missing framework: routing, SSR, and data fetching decided for you — and a server to run.", effort: "moderate" },
+      { techId: "htmx", note: "The 'do we need a SPA at all?' option — server-rendered HTML with sprinkles of interactivity.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "trpc", note: "With a TypeScript backend, end-to-end type inference from server to component with no codegen." },
       { techId: "rest", note: "The boring, universal pairing — every React data library speaks it." },
       { techId: "static-edge", note: "A pure SPA is static files — CDN hosting is free-tier cheap and operationally trivial." },
+    ],
+    commitments: [
+      {
+        need: "You now own a build toolchain and its upgrade treadmill",
+        why: "Bundler, transpiler, and framework majors move independently; someone must keep them compatible.",
+      },
+      {
+        need: "You now own the architecture decisions React refuses to make: routing, data fetching, state management",
+        why: "Each is a market of competing libraries with real churn — your picks become legacy you either defend or migrate every few years.",
+      },
+      {
+        need: "You now need render-performance literacy on the team",
+        why: "Nothing stops a junior from shipping an app that re-renders everything on every keystroke; memoization and effect discipline are craft knowledge, not defaults.",
+      },
     ],
     tags: ["spa", "library-not-framework"],
   },
@@ -109,9 +123,9 @@ export const FRONTEND_TECHS: Tech[] = [
       "Your backend is .NET/Java/Python and substantial — API routes would duplicate a layer you already have",
     ],
     alternatives: [
-      { techId: "react", note: "Drop back to plain React + a CDN when there's no SEO/SSR need — less machinery, fewer moving parts." },
-      { techId: "htmx", note: "If the appeal is 'server renders the HTML', htmx does that with your existing backend instead of a Node layer." },
-      { techId: "blazor", note: "The .NET-native way to get the same 'one stack for UI and server' consolidation." },
+      { techId: "react", note: "Drop back to plain React + a CDN when there's no SEO/SSR need — less machinery, fewer moving parts.", effort: "moderate" },
+      { techId: "htmx", note: "If the appeal is 'server renders the HTML', htmx does that with your existing backend instead of a Node layer.", effort: "rewrite" },
+      { techId: "blazor", note: "The .NET-native way to get the same 'one stack for UI and server' consolidation.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "trpc", note: "Or its built-in server actions — either way, typed calls from component to server with no API ceremony." },
@@ -123,6 +137,20 @@ export const FRONTEND_TECHS: Tech[] = [
     ],
     notInterchangeableWith: [
       { techId: "react", note: "Next.js isn't 'newer React' — it's React plus a server runtime. Adopting it is a hosting and architecture decision, not a library upgrade." },
+    ],
+    commitments: [
+      {
+        need: "You now operate a server runtime, not a static bundle",
+        why: "SSR means Node processes with memory, scaling, and patching needs — or a Vercel bill and a vendor relationship in exchange for not having them.",
+      },
+      {
+        need: "You now own the server/client boundary in every component decision",
+        why: "Server Components make 'where does this code run?' a per-file question with security and correctness consequences — a secret imported into the wrong file ships to the browser.",
+      },
+      {
+        need: "You now must ride framework majors that reshape core patterns",
+        why: "Pages-to-app-router wasn't an upgrade, it was a migration; the framework's velocity becomes your maintenance calendar.",
+      },
     ],
     tags: ["meta-framework", "ssr", "fullstack"],
   },
@@ -171,14 +199,28 @@ export const FRONTEND_TECHS: Tech[] = [
       "Hiring markets where React candidates outnumber Angular ones 10:1 (most of them)",
     ],
     alternatives: [
-      { techId: "react", note: "Trade guardrails for ecosystem: more flexibility, more hiring, more decisions to own." },
-      { techId: "vue", note: "A middle path: more structure than React, far less ceremony than Angular." },
-      { techId: "blazor", note: "For .NET shops, the same enterprise-guardrails philosophy without a second language." },
+      { techId: "react", note: "Trade guardrails for ecosystem: more flexibility, more hiring, more decisions to own.", effort: "rewrite" },
+      { techId: "vue", note: "A middle path: more structure than React, far less ceremony than Angular.", effort: "rewrite" },
+      { techId: "blazor", note: "For .NET shops, the same enterprise-guardrails philosophy without a second language.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "spring-boot", note: "The classic enterprise pairing — two convention-heavy, DI-centric frameworks with matching cultures." },
       { techId: "aspnet-core", note: "Equally common in enterprises; both stacks share the 'one blessed way' philosophy." },
       { techId: "rest", note: "Angular's HttpClient + OpenAPI codegen is a well-worn, typed path." },
+    ],
+    commitments: [
+      {
+        need: "You now own RxJS proficiency as a hiring and onboarding requirement",
+        why: "Observables are load-bearing in Angular's HTTP, forms, and routing — a team that can't debug an operator chain can't debug the app.",
+      },
+      {
+        need: "You now own the framework's upgrade cadence across the entire codebase",
+        why: "Everything versions together; ng update makes each step smooth, but skipping majors accumulates debt the LTS clock will eventually call in.",
+      },
+      {
+        need: "You now must staff Angular expertise from a market that trains React developers",
+        why: "Most candidates arrive needing conversion — budget ramp-up time or grow your seniors internally.",
+      },
     ],
     tags: ["framework", "enterprise", "spa"],
   },
@@ -224,13 +266,27 @@ export const FRONTEND_TECHS: Tech[] = [
       "You depend on the newest third-party UI libraries, which ship React-first",
     ],
     alternatives: [
-      { techId: "react", note: "When ecosystem depth and hiring outweigh Vue's ergonomics." },
-      { techId: "svelte", note: "Willing to trade even more ecosystem for even better ergonomics and performance." },
-      { techId: "nextjs", note: "Vue's equivalent is Nuxt — if you're comparing meta-frameworks, compare those two." },
+      { techId: "react", note: "When ecosystem depth and hiring outweigh Vue's ergonomics.", effort: "rewrite" },
+      { techId: "svelte", note: "Willing to trade even more ecosystem for even better ergonomics and performance.", effort: "rewrite" },
+      { techId: "nextjs", note: "Vue's equivalent is Nuxt — if you're comparing meta-frameworks, compare those two.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "fastapi", note: "A popular 'pragmatic and pleasant' pairing in the Python world." },
       { techId: "rest", note: "Vue's data story is unopinionated; plain REST + fetch/axios is the beaten path." },
+    ],
+    commitments: [
+      {
+        need: "You now own the Options-vs-Composition API decision and its enforcement",
+        why: "The ecosystem's docs and libraries split across both idioms; a codebase that mixes them freely reads like two different frameworks.",
+      },
+      {
+        need: "You now vet the third-party long tail more carefully than a React team would",
+        why: "React-first libraries treat Vue support as a port — maintenance lags and feature gaps land on you.",
+      },
+      {
+        need: "You now own a JS build toolchain, same as any SPA",
+        why: "Vite makes it pleasant, but bundler, framework, and tooling majors still move independently and someone keeps them aligned.",
+      },
     ],
     tags: ["progressive", "spa"],
   },
@@ -277,12 +333,26 @@ export const FRONTEND_TECHS: Tech[] = [
       "The app leans hard on rich third-party component ecosystems (complex grids, charts)",
     ],
     alternatives: [
-      { techId: "react", note: "The ecosystem-insurance trade: heavier and more boilerplate, but nothing you need will be missing." },
-      { techId: "vue", note: "A middle point — better ecosystem than Svelte, nearly as pleasant." },
+      { techId: "react", note: "The ecosystem-insurance trade: heavier and more boilerplate, but nothing you need will be missing.", effort: "rewrite" },
+      { techId: "vue", note: "A middle point — better ecosystem than Svelte, nearly as pleasant.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "static-edge", note: "Tiny bundles + static/edge hosting = extremely fast sites for nearly free." },
       { techId: "go-http", note: "A popular 'small and fast everywhere' pairing for lean teams." },
+    ],
+    commitments: [
+      {
+        need: "You now build and maintain more UI primitives in-house",
+        why: "The component-library long tail (complex grids, date pickers, rich charts) is thin — what React teams npm-install, you write and own.",
+      },
+      {
+        need: "You now own training as your hiring pipeline",
+        why: "Almost nobody arrives knowing Svelte; every hire is a React or Vue developer plus ramp-up time you fund.",
+      },
+      {
+        need: "You now absorb reactivity-model shifts from a framework still willing to make them",
+        why: "Svelte 5's runes rewrote the core idiom — a young framework's improvements arrive as your migration projects.",
+      },
     ],
     tags: ["compiled", "performance"],
   },
@@ -331,9 +401,9 @@ export const FRONTEND_TECHS: Tech[] = [
       "You may need non-.NET developers to work on the frontend later",
     ],
     alternatives: [
-      { techId: "react", note: "The ecosystem-standard SPA answer if you accept owning a JavaScript stack alongside .NET." },
-      { techId: "angular", note: "Culturally the closest JS framework to .NET's philosophy — a common .NET-shop compromise." },
-      { techId: "htmx", note: "Razor Pages + htmx covers many 'internal app' cases with even less machinery than Blazor." },
+      { techId: "react", note: "The ecosystem-standard SPA answer if you accept owning a JavaScript stack alongside .NET.", effort: "rewrite" },
+      { techId: "angular", note: "Culturally the closest JS framework to .NET's philosophy — a common .NET-shop compromise.", effort: "rewrite" },
+      { techId: "htmx", note: "Razor Pages + htmx covers many 'internal app' cases with even less machinery than Blazor.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "aspnet-core", note: "Not just compatible — the entire value proposition assumes this pairing." },
@@ -341,6 +411,20 @@ export const FRONTEND_TECHS: Tech[] = [
     ],
     frictionWith: [
       { techId: "express", note: "Blazor without a .NET backend forfeits its whole reason to exist — shared language and models." },
+    ],
+    commitments: [
+      {
+        need: "You now own a mode decision (WASM vs Server) with permanent operational consequences",
+        why: "WASM commits you to multi-MB payload budgets; Server commits you to per-user socket state, sticky sessions, and latency sensitivity — and switching later is a migration.",
+      },
+      {
+        need: "You now staff the frontend exclusively from the .NET pool",
+        why: "There is no Blazor hiring market separate from C# developers — frontend staffing flexibility ends the day you need someone who isn't one.",
+      },
+      {
+        need: "You now bridge to the JavaScript ecosystem yourself when a widget only exists there",
+        why: "JS interop works, but every use of it reintroduces exactly the toolchain Blazor promised to eliminate.",
+      },
     ],
     tags: ["dotnet", "wasm", "lob"],
   },
@@ -391,9 +475,9 @@ export const FRONTEND_TECHS: Tech[] = [
       "The frontend team's skills and preferences are SPA-shaped",
     ],
     alternatives: [
-      { techId: "react", note: "When client-side complexity is real and earned, the SPA model is the right tool — buy it deliberately." },
-      { techId: "nextjs", note: "Interestingly convergent: React's server components move React toward htmx's 'render on the server' worldview." },
-      { techId: "blazor", note: "For .NET shops, Razor Pages + htmx and Blazor Server compete for the same 'no-JS internal app' niche." },
+      { techId: "react", note: "When client-side complexity is real and earned, the SPA model is the right tool — buy it deliberately.", effort: "rewrite" },
+      { techId: "nextjs", note: "Interestingly convergent: React's server components move React toward htmx's 'render on the server' worldview.", effort: "rewrite" },
+      { techId: "blazor", note: "For .NET shops, Razor Pages + htmx and Blazor Server compete for the same 'no-JS internal app' niche.", effort: "rewrite" },
     ],
     pairsWellWith: [
       { techId: "django", note: "Django templates + htmx is a celebrated combo — the admin-heavy web with almost no JavaScript." },
@@ -403,6 +487,20 @@ export const FRONTEND_TECHS: Tech[] = [
     frictionWith: [
       { techId: "graphql", note: "htmx wants HTML fragments over the wire; GraphQL exists to serve flexible JSON to rich clients. These are opposite bets." },
       { techId: "trpc", note: "Typed RPC to a JS client has no role when the server returns rendered HTML." },
+    ],
+    commitments: [
+      {
+        need: "You now own UI architecture on the server: fragment composition, partial-update conventions, endpoint-per-interaction design",
+        why: "There's no client framework holding state — your template structure and endpoint design ARE the frontend architecture, and nobody else has documented yours.",
+      },
+      {
+        need: "You now hold the line on the design envelope",
+        why: "The pressure to bolt on 'just one rich widget' compounds over time; each JavaScript island erodes the simplicity that justified the choice.",
+      },
+      {
+        need: "You now own integration tests as the substitute for a type-checked UI contract",
+        why: "Nothing verifies an hx-target selector against the rendered HTML — the safety net is tests you write, or users you apologize to.",
+      },
     ],
     tags: ["hypermedia", "no-build", "server-rendered"],
   },

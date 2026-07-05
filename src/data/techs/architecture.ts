@@ -57,14 +57,17 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "modular-monolith",
         note: "Same deployable, enforced internal boundaries — the upgrade path when the ball of mud threatens but the ops budget hasn't grown.",
+        effort: "moderate",
       },
       {
         techId: "microservices",
         note: "Split when team-scale pain (deploy contention, ownership disputes) exceeds the very real distributed-systems tax — not before.",
+        effort: "rewrite",
       },
       {
         techId: "serverless-arch",
         note: "For spiky or low-traffic workloads where paying for an always-on process stings.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -75,6 +78,20 @@ export const ARCHITECTURE_TECHS: Tech[] = [
     frictionWith: [
       { techId: "kafka", note: "An event log between parts of one deployable usually means you've built a distributed system with extra steps." },
       { techId: "kubernetes", note: "Running one deployable on a full K8s cluster is renting a container ship to move a couch." },
+    ],
+    commitments: [
+      {
+        need: "You now own module-boundary discipline with no compiler or network to enforce it",
+        why: "Every shortcut import is legal in one codebase; the big ball of mud arrives one expedient PR at a time.",
+      },
+      {
+        need: "You now must watch the scaling ceiling — database contention, build times, deploy duration — and plan the exit before you hit it",
+        why: "A monolith fails gradually, then suddenly; the time to draw module boundaries is while the codebase still fits in someone's head.",
+      },
+      {
+        need: "You now own a release train: every team ships on one cadence, and one team's freeze is everyone's freeze",
+        why: "A single deployable means a single pipeline — deploy coordination is a standing meeting you signed up for, it just doesn't hurt yet.",
+      },
     ],
     tags: ["default-choice", "single-deployable"],
   },
@@ -126,16 +143,32 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "monolith",
         note: "If the team is small and boundaries are speculative, skip the ceremony and keep modules as plain namespaces.",
+        effort: "drop-in",
       },
       {
         techId: "microservices",
         note: "Extract the modules whose deploy cadence or scale profile has demonstrably diverged — the boundaries are already drawn.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
       { techId: "postgres", note: "Schema-per-module in one database keeps ownership clear while transactions still work." },
       { techId: "aspnet-core", note: ".NET's project/assembly system plus architecture tests make module boundaries mechanically enforceable." },
       { techId: "spring-boot", note: "Spring Modulith exists precisely to enforce this pattern on the JVM." },
+    ],
+    commitments: [
+      {
+        need: "You now own boundary enforcement in CI — architecture tests, module systems, or lint rules that fail the build on an illegal import",
+        why: "There's no network policing your boundaries, so your tooling must; a boundary that isn't mechanically enforced quietly stops existing.",
+      },
+      {
+        need: "You now must design module interfaces like service contracts, with review to match",
+        why: "The whole promise is that a module can be extracted later — that only stays true if its interface never grew convenience backdoors.",
+      },
+      {
+        need: "You now own ongoing boundary maintenance as the domain shifts",
+        why: "Boundaries drawn at project start decay as the business moves; unmaintained ones become exactly the walls everyone tunnels through.",
+      },
     ],
     tags: ["stepping-stone", "single-deployable"],
   },
@@ -190,10 +223,12 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "modular-monolith",
         note: "Delivers the ownership and boundary benefits without the network in the middle — the honest first step for most teams.",
+        effort: "moderate",
       },
       {
         techId: "event-driven",
         note: "Often layered onto microservices; choose event-driven when the coupling you need to break is temporal (who must be up when), not just organizational.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -208,6 +243,24 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "modular-monolith",
         note: "People treat these as sizes of the same thing. They're not: one has network boundaries with independent failure modes, the other has compile-time boundaries. The migration between them is real work, in either direction.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now need distributed tracing and centralized logging before the first incident, not after",
+        why: "A request crossing five services can't be debugged from any single service's logs.",
+      },
+      {
+        need: "You now own versioned API contracts between teams",
+        why: "A breaking change is no longer a compile error — it's a production incident in someone else's service.",
+      },
+      {
+        need: "You now own a platform: service templates, per-service CI/CD, service discovery, secrets distribution",
+        why: "Every service repeats the same infrastructure needs — without a paved road, each team paves its own, differently.",
+      },
+      {
+        need: "You now need a maintained answer to local development",
+        why: "Running thirty services on a laptop stops working early; docker-compose sprawl, shared environments, or contract stubs — someone must build and keep whichever you pick alive.",
       },
     ],
     tags: ["distributed", "team-scale"],
@@ -260,10 +313,12 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "microservices",
         note: "The synchronous alternative for decomposition: REST/gRPC calls keep workflows traceable but couple availability — A can't finish if B is down.",
+        effort: "rewrite",
       },
       {
         techId: "cqrs-es",
         note: "Go further and make events the source of truth, not just notifications — only where audit/replay demands justify it.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -275,6 +330,24 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "websockets",
         note: "'Event-driven' the architecture is about system-to-system async messaging; WebSockets is a client-push transport. Sharing the word 'event' is a coincidence.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own idempotent consumers and duplicate handling, in every consumer, forever",
+        why: "At-least-once delivery is the only honest guarantee a broker makes; a consumer that can't survive a replayed event corrupts data on an ordinary Tuesday.",
+      },
+      {
+        need: "You now need event schema governance — a registry, compatibility rules, and a deprecation process",
+        why: "Producers can't see their consumers; without enforced compatibility, a renamed field ships as a successful deploy and lands as a silent consumer crash.",
+      },
+      {
+        need: "You now own workflow observability: correlation IDs and tracing stitched across every hop",
+        why: "No stack trace shows 'what happens after checkout' — without correlation, incident response is grepping five consumers' logs by timestamp.",
+      },
+      {
+        need: "You now run a broker as tier-zero infrastructure",
+        why: "The broker inherits the availability requirements of every workflow that crosses it — when it's down, everything is down.",
       },
     ],
     tags: ["distributed", "async"],
@@ -328,10 +401,12 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "monolith",
         note: "Past a steady-traffic threshold, one boring always-on service is cheaper and simpler than a constellation of functions.",
+        effort: "rewrite",
       },
       {
         techId: "microservices",
         note: "When functions multiply and need contracts and ownership anyway, containerized services give the same boundaries with fewer platform limits.",
+        effort: "moderate",
       },
     ],
     pairsWellWith: [
@@ -341,6 +416,24 @@ export const ARCHITECTURE_TECHS: Tech[] = [
     ],
     frictionWith: [
       { techId: "hibernate", note: "Heavyweight ORM warm-up per cold start is real money and real latency — lightweight data access wins in functions." },
+    ],
+    commitments: [
+      {
+        need: "You now own a cold-start budget per latency-sensitive path, and must measure it continuously",
+        why: "Cold starts degrade invisibly as functions, dependencies, and VPC config change — nobody notices until a customer does.",
+      },
+      {
+        need: "You now track vendor limits (execution time, payload size, concurrency) as design constraints",
+        why: "These limits are load-bearing walls: a job that needs sixteen minutes of processing doesn't need a refactor, it needs a different architecture.",
+      },
+      {
+        need: "You now need distributed debugging skills and tracing across managed services",
+        why: "A request touches functions, queues, and managed stores; when it fails, there is no process to attach a debugger to.",
+      },
+      {
+        need: "You now own cost observability as an engineering discipline",
+        why: "Per-invocation pricing turns a retry storm or a chatty loop into a bill, not a blip — someone must watch spend the way other teams watch CPU.",
+      },
     ],
     tags: ["managed", "pay-per-use"],
   },
@@ -393,10 +486,12 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "event-driven",
         note: "If you need events between systems but a normal database inside them, plain event-driven integration is 20% of the cost for 80% of the benefit.",
+        effort: "rewrite",
       },
       {
         techId: "monolith",
         note: "A boring CRUD system with a well-designed audit log table covers a surprising share of 'we need history' requirements.",
+        effort: "rewrite",
       },
     ],
     pairsWellWith: [
@@ -407,6 +502,24 @@ export const ARCHITECTURE_TECHS: Tech[] = [
       {
         techId: "event-driven",
         note: "Event-driven integration uses events to notify other systems; event sourcing uses events as the system of record. Confusing these leads to sourcing your integration events — a famous trap.",
+      },
+    ],
+    commitments: [
+      {
+        need: "You now own an event versioning and upcasting strategy for the lifetime of the system",
+        why: "Events written today must still be readable in ten years; they're immutable, so every schema change needs an upcaster — 'we'll just migrate the data' is not on the menu.",
+      },
+      {
+        need: "You now need projection rebuild tooling and a runbook for using it",
+        why: "Projections are disposable caches by design; replaying years of events onto a corrupted or brand-new projection must be a routine operation, not a research project.",
+      },
+      {
+        need: "You now own eventual-consistency UX patterns across the whole product",
+        why: "The read model lags the write model by design; every screen must decide how to handle 'you just did that, but it isn't visible yet'.",
+      },
+      {
+        need: "You now must turn the pattern's tribal knowledge into onboarding curriculum",
+        why: "CQRS+ES failure modes (sourcing integration events, commands reading projections) look fine in code review and hurt months later — new hires can't ship safely on intuition.",
       },
     ],
     tags: ["audit", "advanced"],

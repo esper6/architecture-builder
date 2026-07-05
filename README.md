@@ -6,17 +6,33 @@ of **63 technologies across 10 stack layers** — from architecture styles
 data access, databases, caching, messaging, auth, and hosting — each scored on
 eight tradeoff dimensions and connected by ~400 authored relationship edges.
 
-The core thesis: **"best technology" is meaningless without "for what."** The
-app makes that lesson interactive instead of stating it.
+The core thesis: **"best technology" is meaningless without "for what" and
+"for whom"** — and a stack is a system, not a shopping list. The app makes
+those lessons interactive instead of stating them:
 
-## The four views
+- **Emergence, not averages** — ops load, type safety, performance,
+  scalability, and maturity are weakest-link properties. The Stack Builder
+  charts the naive average against the emergent profile and names the culprit
+  layer setting each floor.
+- **Conway's Law as an input** — team size, platform team, and compliance
+  regime apply *visible, explained* score adjustments. Drag team size and
+  watch Kubernetes climb.
+- **Choices are subscriptions** — every tech carries its second-order
+  obligations ("you now own consumer-lag monitoring"), aggregated into the
+  stack's obligations ledger.
+- **Architecture is a verb** — a stress lens plays Traffic ×10 / Team ×5 /
+  Compliance-lands against your stack and prices the exits with
+  migration-effort ratings on every substitution edge.
+
+## The five views
 
 | Tab | What it teaches |
 | --- | --- |
-| **Compare** | Rank any layer's options under *your* priorities (8 weight sliders + scenario presets like "Startup MVP" vs "Regulated / Financial"), then radar-compare up to 4. Watch the winners flip when priorities change — that flip is the whole discipline. |
-| **Stack Builder** | Assemble a full stack layer by layer. A compatibility engine flags hard ecosystem violations (EF Core on Spring Boot), authored frictions (Next.js in front of a full .NET API), and synergies (Angular + Spring Boot). Export any stack as Markdown. |
-| **Swap Map** | The substitution graph: what can stand in for X, what X can stand in for (including cross-layer swaps like "htmx can replace a SPA"), and — the best part — **commonly-confused pairs that are NOT interchangeable** (Kafka ≠ RabbitMQ, event-driven ≠ event sourcing). |
-| **Learn** | The eight dimensions, how scoring works, and this app's own Architecture Decision Records — real ADRs, included partly as documentation and mostly as a worked example of the format. |
+| **Compare** | Rank any layer's options under *your* priorities (8 weight sliders + scenario presets) and org context, then radar-compare up to 4. Watch the winners flip when priorities or context change — that flip is the whole discipline. |
+| **Stack Builder** | Assemble a full stack layer by layer. Compatibility engine (ecosystem blockers, frictions, synergies), average-vs-emergent radar with floor culprits, stress lens, obligations ledger, and one-click **ADR draft export**. |
+| **Swap Map** | The substitution graph: what can stand in for X, what X can stand in for (with migration-effort badges), and **commonly-confused pairs that are NOT interchangeable** (Kafka ≠ RabbitMQ, event-driven ≠ event sourcing). |
+| **Challenges** | Design under constraints: scenario cards ("The EDI backbone", "Rescue mission") lock the weights and context and score your Stack Builder work live — floors check the *emergent* profile, so a great average with one weak layer fails, exactly like production. |
+| **Learn** | The eight dimensions, the systems-thinking method (emergence, Conway, obligations, stress-testing), and this app's own ADRs — a worked example of the format. |
 
 ## Run it
 

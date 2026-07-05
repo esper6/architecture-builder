@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { TechId } from "../data/types";
 import { CATEGORIES, CATEGORY_MAP } from "../data/categories";
 import { confusedWith, getTech, replacementTargets, techsIn } from "../data";
+import { EffortBadge } from "../components/EffortBadge";
 
 /**
  * Substitution explorer: for any technology, what can stand in its place,
@@ -73,6 +74,7 @@ export function SwapView() {
                           {CATEGORY_MAP[t.category].name} — cross-layer
                         </span>
                       )}
+                      <EffortBadge effort={r.effort} />
                       <p className="rel-note">{r.note}</p>
                     </div>
                   );
@@ -101,6 +103,7 @@ export function SwapView() {
                         {CATEGORY_MAP[e.from.category].name} — cross-layer
                       </span>
                     )}
+                    <EffortBadge effort={e.effort} />
                     <p className="rel-note">{e.note}</p>
                   </div>
                 ))}

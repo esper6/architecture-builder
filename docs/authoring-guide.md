@@ -82,6 +82,24 @@ both render in detail views (and native dimensions in the Compare table):
   wrongly treat as equivalent (Kafka vs RabbitMQ, event-driven vs event
   sourcing). Use it wherever the confusion is common.
 
+### System-thinking fields (required)
+
+- **`commitments`** (2–4 per tech) — second-order obligations the choice signs
+  a team up for, phrased "You now own/need/must …" with a `why`. Not generic
+  advice, not restated weaknesses: the ongoing infrastructure/process/skill
+  costs that appear on no feature list (Kafka → consumer-lag monitoring;
+  JWT → a revocation story). The Stack Builder aggregates these into the
+  obligations ledger.
+- **`effort` on every `alternatives` edge** — `"drop-in"` (days, same model),
+  `"moderate"` (a real migration project, weeks), `"rewrite"` (paradigm shift
+  or whole-layer reconstruction). Note the deliberate asymmetries: monolith →
+  microservices is a rewrite, but monolith → modular-monolith →
+  microservices is two moderates — pricing paths is the point.
+- **Context modifiers** live centrally in `src/data/context.ts`, not on techs:
+  visible score deltas keyed to org context (team size, platform team,
+  compliance), each with a written rationale. Add one only when the flip is
+  real, explainable, and worth teaching (see ADR-006).
+
 ## Ecosystem bindings
 
 Set `ecosystem` ONLY on techs bound to a language ecosystem:
