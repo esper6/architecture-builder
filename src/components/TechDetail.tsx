@@ -53,6 +53,11 @@ export function TechDetail({
           )}
         </h2>
         <p className="tagline">{tech.tagline}</p>
+        {tech.aka && tech.aka.length > 0 && (
+          <p className="small muted" style={{ margin: "0.15rem 0 0" }}>
+            Also known as / seen as: {tech.aka.join(" · ")}
+          </p>
+        )}
       </div>
       <p className="secondary" style={{ margin: 0 }}>
         {tech.description}

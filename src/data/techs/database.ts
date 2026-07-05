@@ -11,6 +11,7 @@ import type { Tech } from "../types";
 export const DATABASE_TECHS: Tech[] = [
   {
     id: "postgres",
+    aka: ["Postgres", "pg", "Aurora/RDS PostgreSQL", "Supabase (hosted)"],
     name: "PostgreSQL",
     category: "database",
     tagline: "The default that must be argued out of — relational rigor that keeps eating its neighbors' niches.",
@@ -106,6 +107,7 @@ export const DATABASE_TECHS: Tech[] = [
   },
   {
     id: "mssql",
+    aka: ["MSSQL", "Microsoft SQL Server", "Azure SQL"],
     name: "SQL Server",
     category: "database",
     tagline: "Enterprise-grade engine, enterprise-grade invoice — licensing is an architectural force, not a line item.",
@@ -343,6 +345,7 @@ export const DATABASE_TECHS: Tech[] = [
   },
   {
     id: "mongodb",
+    aka: ["Mongo", "Atlas (hosted)"],
     name: "MongoDB",
     category: "database",
     tagline: "Store your objects as they are — and discover that 'schemaless' means the schema moved into your code.",
@@ -535,6 +538,7 @@ export const DATABASE_TECHS: Tech[] = [
   },
   {
     id: "cosmosdb",
+    aka: ["Azure DocumentDB (former name)"],
     name: "Cosmos DB",
     category: "database",
     tagline: "Globally distributed, five consistency levels, priced in a currency you'll learn the hard way.",
@@ -618,6 +622,7 @@ export const DATABASE_TECHS: Tech[] = [
   },
   {
     id: "cassandra",
+    aka: ["ScyllaDB (compatible rewrite)", "wide-column store"],
     name: "Cassandra",
     category: "database",
     tagline: "Linear write scale across datacenters — bring your own operations team and know your queries cold.",

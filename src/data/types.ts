@@ -188,6 +188,13 @@ export interface Commitment {
 
 export interface Tech {
   id: TechId;
+  /**
+   * Alternate names people actually use — old brands (".NET Core"),
+   * nicknames ("K8s"), or the well-known products that embody a concept
+   * (Managed IdP → "Auth0", "Entra ID"). Shown on profiles so a reader's
+   * mental vocabulary maps onto the canonical name.
+   */
+  aka?: string[];
   name: string;
   category: CategoryId;
   /** Language ecosystem this tech is bound to; omit for agnostic. */

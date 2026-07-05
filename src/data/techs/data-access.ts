@@ -10,6 +10,7 @@ import type { Tech } from "../types";
 export const DATA_ACCESS_TECHS: Tech[] = [
   {
     id: "ef-core",
+    aka: ["Entity Framework", "EF"],
     name: "Entity Framework Core",
     category: "data-access",
     ecosystem: "dotnet",
@@ -154,6 +155,7 @@ export const DATA_ACCESS_TECHS: Tech[] = [
   },
   {
     id: "ado-net",
+    aka: ["ADO.NET", "System.Data", "SqlClient"],
     name: "Raw ADO.NET",
     category: "data-access",
     ecosystem: "dotnet",
@@ -296,6 +298,7 @@ export const DATA_ACCESS_TECHS: Tech[] = [
   },
   {
     id: "drizzle",
+    aka: ["Drizzle ORM"],
     name: "Drizzle",
     category: "data-access",
     ecosystem: "node",
@@ -438,6 +441,7 @@ export const DATA_ACCESS_TECHS: Tech[] = [
   },
   {
     id: "hibernate",
+    aka: ["JPA", "Spring Data JPA"],
     name: "Hibernate / JPA",
     category: "data-access",
     ecosystem: "jvm",

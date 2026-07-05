@@ -9,6 +9,7 @@ import type { Tech } from "../types";
 export const MESSAGING_TECHS: Tech[] = [
   {
     id: "rabbitmq",
+    aka: ["AMQP broker"],
     name: "RabbitMQ",
     category: "messaging",
     tagline: "The classic smart broker: messages are work, and the broker's job is to hand each piece to exactly one worker.",
@@ -106,6 +107,7 @@ export const MESSAGING_TECHS: Tech[] = [
   },
   {
     id: "kafka",
+    aka: ["Confluent", "Amazon MSK", "Azure Event Hubs (Kafka-compatible)"],
     name: "Kafka",
     category: "messaging",
     tagline: "Not a queue — a distributed, replayable log where messages are facts that many consumers read at their own pace.",
@@ -398,6 +400,7 @@ export const MESSAGING_TECHS: Tech[] = [
   },
   {
     id: "nats",
+    aka: ["JetStream (persistence layer)"],
     name: "NATS",
     category: "messaging",
     tagline: "Messaging at the speed of a function call — a single small binary that does pub/sub first and persistence on request.",

@@ -11,6 +11,7 @@ import type { Tech } from "../types";
 export const CACHING_TECHS: Tech[] = [
   {
     id: "redis",
+    aka: ["Valkey (fork)", "ElastiCache", "Azure Cache"],
     name: "Redis",
     category: "caching",
     tagline: "The default distributed cache that keeps volunteering for extra jobs — until it's holding your app together.",
@@ -172,6 +173,7 @@ export const CACHING_TECHS: Tech[] = [
   },
   {
     id: "in-process-cache",
+    aka: ["IMemoryCache", "Caffeine", "lru-cache", "memoization"],
     name: "In-Process Memory Cache",
     category: "caching",
     tagline: "A dictionary in your app — the fastest cache you'll ever use and the first one you should reach for.",
@@ -255,6 +257,7 @@ export const CACHING_TECHS: Tech[] = [
   },
   {
     id: "cdn-cache",
+    aka: ["Cloudflare", "CloudFront", "Fastly", "Akamai"],
     name: "CDN / Edge Caching",
     category: "caching",
     tagline: "The cache that answers before your server hears the question — highest leverage, least control.",

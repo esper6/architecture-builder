@@ -10,6 +10,7 @@ import type { Tech } from "../types";
 export const HOSTING_TECHS: Tech[] = [
   {
     id: "vms",
+    aka: ["EC2", "Azure VMs", "IaaS", "a box you SSH into"],
     name: "Virtual Machines",
     category: "hosting",
     tagline: "SSH, systemd, and full control — the honest baseline whose hidden costs are patching, drift, and pet servers.",
@@ -100,6 +101,7 @@ export const HOSTING_TECHS: Tech[] = [
   },
   {
     id: "paas-containers",
+    aka: ["App Service", "Cloud Run", "Fargate/ECS", "Fly.io", "Railway"],
     name: "Container PaaS",
     category: "hosting",
     tagline: "Give us a container, we run it — the sweet spot that deletes ops work most teams never wanted to own.",
@@ -194,6 +196,7 @@ export const HOSTING_TECHS: Tech[] = [
   },
   {
     id: "kubernetes",
+    aka: ["K8s", "AKS", "EKS", "GKE"],
     name: "Kubernetes",
     category: "hosting",
     tagline: "The datacenter API — declarative orchestration for fleets of services, and pure overhead below that scale.",
@@ -295,6 +298,7 @@ export const HOSTING_TECHS: Tech[] = [
   },
   {
     id: "serverless-functions",
+    aka: ["AWS Lambda", "Azure Functions", "FaaS"],
     name: "Serverless Functions",
     category: "hosting",
     tagline: "Lambda, Azure Functions — code that exists only while running: per-use billing, cold starts, and a platform-shaped design.",
@@ -385,6 +389,7 @@ export const HOSTING_TECHS: Tech[] = [
   },
   {
     id: "static-edge",
+    aka: ["Vercel", "Netlify", "GitHub Pages", "S3 + CloudFront"],
     name: "Static + Edge Hosting",
     category: "hosting",
     tagline: "Vercel/Netlify-class CDN hosting — global, near-free, near-zero ops, for everything that compiles to files.",

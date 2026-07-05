@@ -8,6 +8,7 @@ import type { Tech } from "../types";
 export const FRONTEND_TECHS: Tech[] = [
   {
     id: "react",
+    aka: ["React.js", "ReactJS"],
     name: "React",
     category: "frontend",
     tagline: "The ecosystem default — a UI library that outsources every other decision to you.",
@@ -80,6 +81,7 @@ export const FRONTEND_TECHS: Tech[] = [
   },
   {
     id: "nextjs",
+    aka: ["Next"],
     name: "Next.js",
     category: "frontend",
     tagline: "React with the decisions made — and a server runtime that can quietly become your backend.",
@@ -156,6 +158,7 @@ export const FRONTEND_TECHS: Tech[] = [
   },
   {
     id: "angular",
+    aka: ["Angular 2+ (distinct from legacy AngularJS)"],
     name: "Angular",
     category: "frontend",
     tagline: "The full-framework answer: everything included, one blessed way, enterprise-grade guardrails.",
@@ -226,6 +229,7 @@ export const FRONTEND_TECHS: Tech[] = [
   },
   {
     id: "vue",
+    aka: ["Vue.js", "Nuxt (its meta-framework)"],
     name: "Vue",
     category: "frontend",
     tagline: "The approachable middle path — more framework than React, less ceremony than Angular.",
@@ -292,6 +296,7 @@ export const FRONTEND_TECHS: Tech[] = [
   },
   {
     id: "svelte",
+    aka: ["SvelteKit (its meta-framework)"],
     name: "Svelte",
     category: "frontend",
     tagline: "The compiler gambit: do the framework's work at build time, ship almost no runtime.",
@@ -358,6 +363,7 @@ export const FRONTEND_TECHS: Tech[] = [
   },
   {
     id: "blazor",
+    aka: ["Razor Components", "Blazor WASM / Blazor Server"],
     name: "Blazor",
     category: "frontend",
     tagline: "C# in the browser — one language end to end for .NET shops, with a payload or a socket to pay for it.",

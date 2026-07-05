@@ -48,6 +48,11 @@ export function SwapView() {
           <p className="tagline" style={{ fontStyle: "italic", color: "var(--text-secondary)" }}>
             {tech.tagline}
           </p>
+          {tech.aka && tech.aka.length > 0 && (
+            <p className="small muted" style={{ margin: "0 0 0.5rem" }}>
+              Also known as / seen as: {tech.aka.join(" · ")}
+            </p>
+          )}
           <p className="secondary" style={{ margin: 0 }}>
             {tech.description}
           </p>

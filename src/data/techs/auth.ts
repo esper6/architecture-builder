@@ -12,6 +12,7 @@ import type { Tech } from "../types";
 export const AUTH_TECHS: Tech[] = [
   {
     id: "jwt-auth",
+    aka: ["JSON Web Tokens", "bearer tokens", "token auth"],
     name: "Stateless JWT",
     category: "auth",
     tagline: "Identity in a signed token — scales without shared state, and makes logout everyone's hardest feature.",
@@ -100,6 +101,7 @@ export const AUTH_TECHS: Tech[] = [
   },
   {
     id: "session-auth",
+    aka: ["cookie auth", "server-side sessions"],
     name: "Cookie Sessions",
     category: "auth",
     tagline: "The boring right answer for server-rendered apps — state on the server, a random ID in a cookie, logout that actually works.",
@@ -188,6 +190,7 @@ export const AUTH_TECHS: Tech[] = [
   },
   {
     id: "managed-idp",
+    aka: ["Entra ID (Azure AD)", "Auth0", "Cognito", "Okta", "Clerk"],
     name: "Managed Identity Provider",
     category: "auth",
     tagline: "Entra ID, Auth0, Cognito — buy the entire identity domain, and read the per-user pricing page twice.",
@@ -281,6 +284,7 @@ export const AUTH_TECHS: Tech[] = [
   },
   {
     id: "self-hosted-idp",
+    aka: ["Keycloak", "IdentityServer", "Ory"],
     name: "Self-Hosted IdP",
     category: "auth",
     tagline: "Keycloak, IdentityServer — own your identity infrastructure: full control, full sovereignty, and a security-critical service on your pager.",

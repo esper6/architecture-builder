@@ -267,6 +267,7 @@ export const ARCHITECTURE_TECHS: Tech[] = [
   },
   {
     id: "event-driven",
+    aka: ["EDA", "pub/sub architecture"],
     name: "Event-Driven Architecture",
     category: "architecture",
     tagline: "Components communicate by publishing facts, not calling each other — decoupled in time, coupled in schema.",
@@ -354,6 +355,7 @@ export const ARCHITECTURE_TECHS: Tech[] = [
   },
   {
     id: "serverless-arch",
+    aka: ["FaaS-first architecture", "cloud-native glue"],
     name: "Serverless Architecture",
     category: "architecture",
     tagline: "Functions and managed services, billed per use — no servers to patch, new failure modes to learn.",
@@ -439,6 +441,7 @@ export const ARCHITECTURE_TECHS: Tech[] = [
   },
   {
     id: "cqrs-es",
+    aka: ["CQRS", "Event Sourcing", "ES"],
     name: "CQRS + Event Sourcing",
     category: "architecture",
     tagline: "Writes are commands, reads are projections, history is the database — maximal power, maximal ceremony.",

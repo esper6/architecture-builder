@@ -10,6 +10,7 @@ import type { Tech } from "../types";
 export const API_STYLE_TECHS: Tech[] = [
   {
     id: "rest",
+    aka: ["RESTful API", "HTTP/JSON API", "Web API"],
     name: "REST / HTTP+JSON",
     category: "api-style",
     tagline: "The default everyone must justify deviating from — resource URLs, verbs, and the web's own caching.",
@@ -95,6 +96,7 @@ export const API_STYLE_TECHS: Tech[] = [
   },
   {
     id: "graphql",
+    aka: ["Apollo (dominant ecosystem)", "Relay"],
     name: "GraphQL",
     category: "api-style",
     tagline: "Clients query exactly what they need — and the server pays for letting them ask anything.",
@@ -184,6 +186,7 @@ export const API_STYLE_TECHS: Tech[] = [
   },
   {
     id: "grpc",
+    aka: ["Protocol Buffers", "protobuf"],
     name: "gRPC",
     category: "api-style",
     tagline: "Typed binary contracts between your own services — the browser needs an interpreter.",
@@ -352,6 +355,7 @@ export const API_STYLE_TECHS: Tech[] = [
   },
   {
     id: "soap",
+    aka: ["WS-*", "WSDL web services", "XML web services"],
     name: "SOAP / WS-*",
     category: "api-style",
     tagline: "The contract-first enterprise stack everyone mocks — and half of B2B still runs on.",
@@ -430,6 +434,7 @@ export const API_STYLE_TECHS: Tech[] = [
   },
   {
     id: "websockets",
+    aka: ["SSE", "SignalR", "socket.io", "server push"],
     name: "WebSockets / SSE",
     category: "api-style",
     tagline: "Persistent push for live data — a complement to request/response, never its replacement.",

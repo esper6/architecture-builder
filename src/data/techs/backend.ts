@@ -10,6 +10,7 @@ import type { Tech } from "../types";
 export const BACKEND_TECHS: Tech[] = [
   {
     id: "aspnet-core",
+    aka: [".NET Core", ".NET 8+", "ASP.NET", "C#/Kestrel"],
     name: "ASP.NET Core",
     category: "backend",
     ecosystem: "dotnet",
@@ -103,6 +104,7 @@ export const BACKEND_TECHS: Tech[] = [
   },
   {
     id: "express",
+    aka: ["Express.js", "a plain Node backend"],
     name: "Node.js + Express",
     category: "backend",
     ecosystem: "node",
@@ -299,6 +301,7 @@ export const BACKEND_TECHS: Tech[] = [
   },
   {
     id: "nestjs",
+    aka: ["Nest"],
     name: "NestJS",
     category: "backend",
     ecosystem: "node",
@@ -403,6 +406,7 @@ export const BACKEND_TECHS: Tech[] = [
   },
   {
     id: "spring-boot",
+    aka: ["Spring", "the Java backend"],
     name: "Spring Boot",
     category: "backend",
     ecosystem: "jvm",
@@ -705,6 +709,7 @@ export const BACKEND_TECHS: Tech[] = [
   },
   {
     id: "go-http",
+    aka: ["Golang", "Gin", "chi", "Echo"],
     name: "Go net/http + chi/Gin",
     category: "backend",
     ecosystem: "go",
@@ -800,6 +805,7 @@ export const BACKEND_TECHS: Tech[] = [
   },
   {
     id: "rust-axum",
+    aka: ["Axum", "Tokio", "Actix (sibling)"],
     name: "Rust + Axum",
     category: "backend",
     ecosystem: "rust",
