@@ -331,6 +331,16 @@ export function StackView({
           </p>
           {CATEGORIES.map((c) => {
             const options = techsIn(c.id);
+            // A slot can have zero compatible options (e.g. data access with a
+            // Go/Rust backend — those ecosystems have no ORM entries, on
+            // purpose). Say so instead of showing an unpickable "— choose —".
+            const noneCompatible =
+              c.id !== "backend" &&
+              backendEco !== undefined &&
+              options.length > 0 &&
+              options.every(
+                (t) => t.ecosystem !== undefined && t.ecosystem !== backendEco,
+              );
             return (
               <div className="slot" key={c.id}>
                 <div className="slot-header">
@@ -348,7 +358,11 @@ export function StackView({
                   aria-label={c.name}
                 >
                   <option value="">
-                    {c.optionalInStack ? "— none —" : "— choose —"}
+                    {noneCompatible
+                      ? "— none (no entries for this ecosystem) —"
+                      : c.optionalInStack
+                        ? "— none —"
+                        : "— choose —"}
                   </option>
                   {options.map((t) => {
                     const incompatible =
@@ -371,6 +385,14 @@ export function StackView({
                 {stack[c.id] && (
                   <span className="small muted">
                     {getTech(stack[c.id]!).tagline}
+                  </span>
+                )}
+                {noneCompatible && !stack[c.id] && (
+                  <span className="small muted">
+                    The catalog has no {ecosystemName(backendEco!)} entry here
+                    — that ecosystem's idiom is talking to the database
+                    directly (sqlc, pgx, sqlx). Leaving this layer empty is
+                    the honest answer.
                   </span>
                 )}
               </div>
