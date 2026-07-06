@@ -762,6 +762,135 @@ button {
   text-align: center;
 }
 
+/* ---------- Incident room ---------- */
+
+.incident-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+@media (max-width: 950px) {
+  .incident-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.incident-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 0.6rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--grid);
+}
+
+.timeline-row:last-child {
+  border-bottom: none;
+}
+
+.timeline-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.suspect-chip.wrong {
+  border-color: color-mix(in srgb, var(--critical) 50%, transparent);
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.suspect-chip.right {
+  border-color: var(--good);
+  color: var(--good-text);
+  font-weight: 700;
+}
+
+.verdict-note {
+  margin-top: 0.7rem;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.87rem;
+}
+
+.wrong-note {
+  border: 1px solid color-mix(in srgb, var(--serious) 55%, transparent);
+}
+
+.right-note {
+  border: 1px solid color-mix(in srgb, var(--good) 55%, transparent);
+}
+
+.mechanism-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.mechanism-option {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.mechanism-option:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.mechanism-option.wrong {
+  border-color: color-mix(in srgb, var(--critical) 50%, transparent);
+  color: var(--muted);
+}
+
+.mechanism-option.right {
+  border-color: var(--good);
+}
+
+.mechanism-debrief {
+  margin: 0.3rem 0 0 0.75rem;
+}
+
+.wrong-text {
+  color: var(--text-secondary);
+}
+
+.right-text {
+  color: var(--good-text);
+}
+
+.postmortem .lesson {
+  border-top: 1px solid var(--grid);
+  padding-top: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.pill.fix-immediate {
+  color: var(--critical);
+  border-color: color-mix(in srgb, var(--critical) 50%, transparent);
+  margin-left: 0;
+}
+
+.pill.fix-structural {
+  color: var(--good-text);
+  border-color: color-mix(in srgb, var(--good) 50%, transparent);
+  margin-left: 0;
+}
+
 /* ---------- Challenges ---------- */
 
 .challenge-grid {

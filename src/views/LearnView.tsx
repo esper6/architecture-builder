@@ -125,6 +125,17 @@ const ADRS: Adr[] = [
     consequences:
       "The mechanic teaches the deepest lesson in the catalog: a good architecture is a position with cheap good moves left, which is why monolith → modular monolith → microservices (two moderates) beats monolith → microservices (one rewrite). The costs are deliberately coarse — real migrations aren't integers — but coarse-and-visible beats precise-and-imaginary for a teaching tool.",
   },
+  {
+    id: "ADR-011",
+    title: "Incidents teach the read direction; wrong answers are the curriculum",
+    status: "Accepted",
+    context:
+      "Every other mode trains the write direction — choosing technologies well. But most of a working architect's hours run the other way: production misbehaves and someone must reason backward from symptoms to which layer's known tradeoff just fired. That skill (reading a timeline, distrusting green dashboards, knowing which layer's alibi the metrics provide) is learned almost exclusively through incidents, which are expensive teachers.",
+    decision:
+      "The incident room simulates postmortems: a narrative and timeline, a clickable blueprint to accuse a component, a root-cause mechanism to name, and a full postmortem as the payoff. Unlike challenges and games, incidents ARE hand-authored with one right answer — and every wrong accusation returns a specific exoneration explaining why the evidence doesn't fit that layer.",
+    consequences:
+      "The exonerations carry as much teaching as the answer ('the database was the victim, not the culprit — it executed exactly what it was asked, 1.9 million times'). The cost is content: each incident is bespoke authoring, not engine-derived, so the audit validates structure (culprit present in the stack, exactly one correct mechanism) but cannot validate truth — incident quality is editorial, not mechanical.",
+  },
 ];
 
 export function LearnView() {

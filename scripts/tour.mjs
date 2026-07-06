@@ -81,6 +81,29 @@ await page.screenshot({ path: `${OUT}/7-game-blackfriday.png`, fullPage: true })
 await page.getByRole("button", { name: "Abandon" }).click();
 await page.waitForTimeout(200);
 
+// --- Incident room: wrong accusation → exoneration; right → mechanism → postmortem
+await page.getByRole("button", { name: "Play", exact: true }).click();
+await page.waitForTimeout(300);
+await page
+  .locator(".challenge-card", { hasText: "Everyone got logged out" })
+  .getByRole("button", { name: "Take the pager →" })
+  .click();
+await page.waitForTimeout(400);
+await page.getByRole("button", { name: "SQL Server", exact: true }).click();
+await page.waitForTimeout(200);
+const exoneration = await page.locator(".wrong-note").count();
+await page.getByRole("button", { name: "Cookie Sessions", exact: true }).click();
+await page.waitForTimeout(300);
+const reveal = await page.locator(".right-note").count();
+await page
+  .locator(".mechanism-option", { hasText: "private session memory" })
+  .click();
+await page.waitForTimeout(300);
+const postmortem = await page.locator(".postmortem").count();
+await page.screenshot({ path: `${OUT}/8-incident-postmortem.png`, fullPage: true });
+await page.getByRole("button", { name: "Take another pager →" }).click();
+await page.waitForTimeout(200);
+
 // --- Swap Map: pick Kafka, expect the confused-with block
 await page.getByRole("button", { name: "Swap Map" }).click();
 await page.waitForTimeout(300);
@@ -112,8 +135,12 @@ if (floorChips !== 5) errors.push(`expected 5 floor chips, got ${floorChips}`);
 if (criteriaFails < 1) errors.push("expected the rescue mission to start failing");
 if (rescueBlockers < 1) errors.push("expected the rescue preset to contain a blocker");
 console.log(`game budget meter: zero=${budgetZero}, after swap=${budgetTwo}`);
+console.log(`incident: exoneration=${exoneration}, reveal=${reveal}, postmortem=${postmortem}`);
 if (budgetZero !== 1) errors.push("expected game budget to start at 0/9");
 if (budgetTwo !== 1) errors.push("expected sqlite→postgres to bill 2 effort points");
+if (exoneration !== 1) errors.push("expected an exoneration for the wrong accusation");
+if (reveal !== 1) errors.push("expected the culprit reveal");
+if (postmortem !== 1) errors.push("expected the postmortem to render");
 if (confused < 1) errors.push("expected confused-with entries for Kafka");
 
 if (errors.length) {

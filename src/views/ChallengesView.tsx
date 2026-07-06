@@ -7,6 +7,7 @@ import { describeContext } from "../data/context";
 import { CATEGORY_MAP } from "../data/categories";
 import { DIMENSION_MAP } from "../data/dimensions";
 import type { DimensionKey } from "../data/types";
+import { IncidentRoom } from "./IncidentRoom";
 
 function targetSummary(ch: Challenge): string[] {
   const t = ch.targets;
@@ -78,6 +79,8 @@ export function ChallengesView({
           );
         })}
       </div>
+
+      <IncidentRoom />
 
       <h2 style={{ marginTop: "2rem" }}>Design challenges</h2>
       <p className="secondary" style={{ margin: "0 0 0", maxWidth: "52rem" }}>

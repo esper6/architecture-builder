@@ -158,6 +158,43 @@ for (const t of ALL_TECHS) {
   console.log(`Games: ${GAMES.length}, all knownSolutions replayed`);
 }
 
+// Incident structure: culprit must be in the stack, exactly one correct
+// mechanism, herring keys must reference stack members.
+{
+  const { INCIDENTS } = await import("../src/data/incidents");
+  for (const inc of INCIDENTS) {
+    const stackIds = new Set(Object.values(inc.stack).filter(Boolean));
+    if (!stackIds.has(inc.culprit)) {
+      console.log(`ISSUE: incident ${inc.id} culprit ${inc.culprit} not in its stack`);
+      issues++;
+    }
+    const correct = inc.mechanisms.filter((m) => m.correct).length;
+    if (correct !== 1) {
+      console.log(`ISSUE: incident ${inc.id} has ${correct} correct mechanisms (want 1)`);
+      issues++;
+    }
+    if (inc.mechanisms.length < 3) {
+      console.log(`ISSUE: incident ${inc.id} has only ${inc.mechanisms.length} mechanisms`);
+      issues++;
+    }
+    if (inc.timeline.length < 3) {
+      console.log(`ISSUE: incident ${inc.id} timeline too thin`);
+      issues++;
+    }
+    for (const key of Object.keys(inc.redHerrings)) {
+      if (!stackIds.has(key)) {
+        console.log(`ISSUE: incident ${inc.id} herring '${key}' not in its stack`);
+        issues++;
+      }
+      if (key === inc.culprit) {
+        console.log(`ISSUE: incident ${inc.id} has a herring for its own culprit`);
+        issues++;
+      }
+    }
+  }
+  console.log(`Incidents: ${INCIDENTS.length}, structure validated`);
+}
+
 const alt = ALL_TECHS.reduce((n, t) => n + t.alternatives.length, 0);
 const pairs = ALL_TECHS.reduce((n, t) => n + (t.pairsWellWith?.length ?? 0), 0);
 const fric = ALL_TECHS.reduce((n, t) => n + (t.frictionWith?.length ?? 0), 0);

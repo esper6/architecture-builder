@@ -1,6 +1,6 @@
 import type { Stack } from "../lib/scoring";
 import type { Tech, TechId } from "../data/types";
-import { getTech } from "../data";
+import { TECH_MAP, getTech } from "../data";
 
 /**
  * The system blueprint: draws the SHAPE your choices make. The topology
@@ -578,7 +578,25 @@ function anchor(from: DNode, to: DNode): [number, number, number, number] {
     : [fcx, from.y, tcx, to.y + to.h];
 }
 
-function NodeShape({ n }: { n: DNode }) {
+function NodeShape({
+  n,
+  onClick,
+  highlight,
+}: {
+  n: DNode;
+  onClick?: () => void;
+  highlight?: "correct" | "wrong" | null;
+}) {
+  const interactive = Boolean(onClick);
+  const stroke =
+    highlight === "correct"
+      ? "var(--good)"
+      : highlight === "wrong"
+        ? "var(--critical)"
+        : n.shape === "ghost"
+          ? "var(--grid)"
+          : "var(--baseline)";
+  const strokeWidth = highlight ? 2.5 : 1;
   const label = (
     <>
       <text
@@ -604,15 +622,20 @@ function NodeShape({ n }: { n: DNode }) {
       )}
     </>
   );
+  const gProps = {
+    onClick,
+    style: interactive ? { cursor: "pointer" as const } : undefined,
+  };
   if (n.shape === "cylinder") {
     const ry = 7;
     return (
-      <g>
+      <g {...gProps}>
         {n.title && <title>{n.title}</title>}
         <path
           d={`M ${n.x} ${n.y + ry} A ${n.w / 2} ${ry} 0 0 1 ${n.x + n.w} ${n.y + ry} V ${n.y + n.h - ry} A ${n.w / 2} ${ry} 0 0 1 ${n.x} ${n.y + n.h - ry} Z`}
           fill="var(--surface-2)"
-          stroke="var(--baseline)"
+          stroke={stroke}
+          strokeWidth={strokeWidth}
         />
         <ellipse
           cx={n.x + n.w / 2}
@@ -620,14 +643,15 @@ function NodeShape({ n }: { n: DNode }) {
           rx={n.w / 2}
           ry={ry}
           fill="var(--surface-2)"
-          stroke="var(--baseline)"
+          stroke={stroke}
+          strokeWidth={strokeWidth}
         />
         {label}
       </g>
     );
   }
   return (
-    <g>
+    <g {...gProps}>
       {n.title && <title>{n.title}</title>}
       <rect
         x={n.x}
@@ -636,15 +660,26 @@ function NodeShape({ n }: { n: DNode }) {
         height={n.h}
         rx={n.shape === "pill" ? n.h / 2 : 8}
         fill={n.shape === "ghost" ? "transparent" : "var(--surface-2)"}
-        stroke={n.shape === "ghost" ? "var(--grid)" : "var(--baseline)"}
+        stroke={stroke}
         strokeDasharray={n.shape === "ghost" ? "4 3" : undefined}
+        strokeWidth={strokeWidth}
       />
       {label}
     </g>
   );
 }
 
-export function StackDiagram({ stack }: { stack: Stack }) {
+export function StackDiagram({
+  stack,
+  onTechClick,
+  highlights,
+}: {
+  stack: Stack;
+  /** When set, real-tech nodes become clickable (used by the incident room). */
+  onTechClick?: (id: TechId) => void;
+  /** Per-tech verdict rings (incident room: exonerated / guilty). */
+  highlights?: Partial<Record<TechId, "correct" | "wrong">>;
+}) {
   const layout = buildLayout(stack);
   const byId = new Map(layout.nodes.map((n) => [n.id, n]));
   // Architecture styles have no node of their own — their conflicts anchor
@@ -776,13 +811,28 @@ export function StackDiagram({ stack }: { stack: Stack }) {
           );
         })}
 
-        {layout.nodes.map((n) => (
-          <NodeShape n={n} key={n.id} />
-        ))}
+        {layout.nodes.map((n) => {
+          const isTech = TECH_MAP.has(n.id as TechId);
+          return (
+            <NodeShape
+              n={n}
+              key={n.id}
+              onClick={
+                onTechClick && isTech
+                  ? () => onTechClick(n.id as TechId)
+                  : undefined
+              }
+              highlight={
+                isTech ? (highlights?.[n.id as TechId] ?? null) : null
+              }
+            />
+          );
+        })}
       </svg>
       <p className="small muted diagram-legend">
-        solid = request/response · dashed = async events · red arc = these
-        choices fight (hover it) · shape set by your Architecture Style
+        {onTechClick
+          ? "click a component to accuse it · solid = request/response · dashed = async events"
+          : "solid = request/response · dashed = async events · red arc = these choices fight (hover it) · shape set by your Architecture Style"}
       </p>
     </div>
   );
