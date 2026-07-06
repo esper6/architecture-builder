@@ -11,7 +11,7 @@ export interface Criterion {
 
 /** Evaluate a challenge against the SAME analysis the Stack Builder shows. */
 export function evaluateChallenge(
-  challenge: Challenge,
+  challenge: Pick<Challenge, "targets">,
   analysis: StackAnalysis,
 ): { criteria: Criterion[]; passed: boolean } {
   const t = challenge.targets;

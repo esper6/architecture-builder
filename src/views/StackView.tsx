@@ -16,6 +16,9 @@ import {
 } from "../lib/scoring";
 import { stackToAdr } from "../lib/export";
 import { evaluateChallenge } from "../lib/challenge";
+import type { Game } from "../lib/game";
+import { diffStacks, evaluateStage } from "../lib/game";
+import { GAME_MODE_LABELS } from "../data/games";
 import { ChartLegend, RadarChart } from "../components/RadarChart";
 import { ScoreTable } from "../components/ScoreTable";
 import { EffortBadge } from "../components/EffortBadge";
@@ -105,6 +108,12 @@ export function StackView({
   onStackChange,
   activeChallenge,
   onAbandonChallenge,
+  activeGame,
+  gameStage,
+  gameBaseStack,
+  onAdvanceGame,
+  onResetStage,
+  onAbandonGame,
 }: {
   weights: Weights;
   scenarioName: string;
@@ -113,18 +122,34 @@ export function StackView({
   onStackChange: (stack: Stack) => void;
   activeChallenge: Challenge | null;
   onAbandonChallenge: () => void;
+  activeGame: Game | null;
+  gameStage: number;
+  gameBaseStack: Stack;
+  onAdvanceGame: () => void;
+  onResetStage: () => void;
+  onAbandonGame: () => void;
 }) {
   const [copied, setCopied] = useState(false);
 
-  // A live challenge pins weights and context so its scoring is deterministic
-  // regardless of what's dialed in elsewhere in the app.
-  const effWeights = activeChallenge
-    ? SCENARIO_MAP[activeChallenge.scenarioId].weights
-    : weights;
-  const effCtx = activeChallenge ? activeChallenge.context : ctx;
-  const effScenarioName = activeChallenge
-    ? SCENARIO_MAP[activeChallenge.scenarioId].name
-    : scenarioName;
+  const stage = activeGame ? activeGame.stages[gameStage] : null;
+
+  // A live challenge or game stage pins weights and context so its scoring
+  // is deterministic regardless of what's dialed in elsewhere in the app.
+  const effWeights = stage
+    ? SCENARIO_MAP[stage.scenarioId].weights
+    : activeChallenge
+      ? SCENARIO_MAP[activeChallenge.scenarioId].weights
+      : weights;
+  const effCtx = stage
+    ? stage.context
+    : activeChallenge
+      ? activeChallenge.context
+      : ctx;
+  const effScenarioName = stage
+    ? SCENARIO_MAP[stage.scenarioId].name
+    : activeChallenge
+      ? SCENARIO_MAP[activeChallenge.scenarioId].name
+      : scenarioName;
 
   const analysis = useMemo(
     () => analyzeStack(stack, effWeights, effCtx),
@@ -133,6 +158,14 @@ export function StackView({
   const challengeResult = activeChallenge
     ? evaluateChallenge(activeChallenge, analysis)
     : null;
+  const stageResult =
+    activeGame && stage
+      ? evaluateStage(stage, analysis, gameBaseStack, stack)
+      : null;
+  const bill = activeGame ? diffStacks(gameBaseStack, stack) : null;
+  const isLastStage = activeGame
+    ? gameStage === activeGame.stages.length - 1
+    : false;
 
   const backendId = stack.backend;
   const backendEco = backendId ? getTech(backendId).ecosystem : undefined;
@@ -200,7 +233,72 @@ export function StackView({
         </div>
       )}
 
-      {!activeChallenge && (
+      {activeGame && stage && stageResult && bill && (
+        <div
+          className={`card challenge-banner${stageResult.passed ? " passed" : ""}`}
+          style={{ marginTop: "1rem" }}
+        >
+          <div className="challenge-banner-head">
+            <div>
+              <p className="section-label">
+                {GAME_MODE_LABELS[activeGame.mode]} · stage {gameStage + 1} of{" "}
+                {activeGame.stages.length}
+                {stageResult.passed &&
+                  (isLastStage ? " — COMPLETE ✓" : " — STAGE CLEAR ✓")}
+              </p>
+              <h3 style={{ margin: 0 }}>
+                {activeGame.name} — {stage.name}
+              </h3>
+              <p className="small secondary" style={{ margin: "0.3rem 0 0" }}>
+                {stage.narrative}
+              </p>
+              <p className="small muted" style={{ margin: "0.3rem 0 0" }}>
+                Scored under locked <strong>{effScenarioName}</strong> weights ·{" "}
+                {describeContext(effCtx)}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+              <button className="chip" onClick={onResetStage} title="Restore this stage's starting stack">
+                Reset stage
+              </button>
+              <button className="chip" onClick={onAbandonGame}>
+                Abandon
+              </button>
+            </div>
+          </div>
+          <ul className="criteria-list">
+            {stageResult.criteria.map((c, i) => (
+              <li key={i} className={c.pass ? "pass" : "fail"}>
+                {c.pass ? "✓" : "✗"} {c.label}
+              </li>
+            ))}
+          </ul>
+          {bill.changes.length > 0 && (
+            <p className="small muted" style={{ margin: "0.2rem 0 0.4rem" }}>
+              Changes this stage:{" "}
+              {bill.changes.map((ch, i) => (
+                <span key={i}>
+                  {i > 0 && " · "}
+                  {ch.label} <strong>({ch.cost})</strong>
+                </span>
+              ))}
+            </p>
+          )}
+          {stageResult.passed && !isLastStage && (
+            <button className="chip take-chip" onClick={onAdvanceGame}>
+              Advance to stage {gameStage + 2} →
+            </button>
+          )}
+          <details style={{ marginTop: "0.4rem" }}>
+            <summary className="small muted">Need a hint?</summary>
+            <p className="small secondary" style={{ margin: "0.4rem 0 0" }}>
+              {stage.hint}
+            </p>
+          </details>
+        </div>
+      )}
+
+      {!activeChallenge && !activeGame && (
         <div style={{ marginTop: "1rem" }}>
           <p className="section-label">
             Start from an archetype (or build from scratch)

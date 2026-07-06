@@ -3,6 +3,8 @@ import { SCENARIO_MAP, SCENARIOS } from "./data/scenarios";
 import { DEFAULT_CONTEXT } from "./data/context";
 import type { Challenge } from "./data/challenges";
 import { CHALLENGES } from "./data/challenges";
+import type { Game } from "./lib/game";
+import { GAMES } from "./data/games";
 import type { OrgContext } from "./data/types";
 import type { Stack, Weights } from "./lib/scoring";
 import { usePersistentState } from "./lib/usePersistentState";
@@ -20,9 +22,17 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "compare", label: "Compare" },
   { id: "stack", label: "Stack Builder" },
   { id: "swap", label: "Swap Map" },
-  { id: "challenges", label: "Challenges" },
+  { id: "challenges", label: "Play" },
   { id: "learn", label: "Learn" },
 ];
+
+/** Persisted progress of an active scenario game. */
+export interface GameProgress {
+  gameId: string;
+  stage: number;
+  /** Stack at the start of the current stage — the budget diffs against it. */
+  baseStack: Stack;
+}
 
 type ThemeChoice = "system" | "light" | "dark";
 
@@ -43,6 +53,10 @@ export default function App() {
     "ab.challenge",
     null,
   );
+  const [gameProgress, setGameProgress] = usePersistentState<GameProgress | null>(
+    "ab.game",
+    null,
+  );
   const [theme, setTheme] = usePersistentState<ThemeChoice>("ab.theme", "dark");
 
   useEffect(() => {
@@ -52,6 +66,9 @@ export default function App() {
 
   const activeChallenge =
     CHALLENGES.find((c) => c.id === challengeId) ?? null;
+  const activeGame = gameProgress
+    ? (GAMES.find((g) => g.id === gameProgress.gameId) ?? null)
+    : null;
 
   const scenarioName =
     scenarioId === "custom"
@@ -60,15 +77,35 @@ export default function App() {
 
   function takeChallenge(ch: Challenge) {
     setChallengeId(ch.id);
+    setGameProgress(null);
     if (ch.id !== challengeId) {
       setStack(ch.presetStack ? { ...ch.presetStack } : {});
     }
     setTab("stack");
   }
 
-  // Weights/context editing hides while a challenge pins them in Stack Builder.
+  function takeGame(g: Game) {
+    setChallengeId(null);
+    if (gameProgress?.gameId !== g.id) {
+      setGameProgress({ gameId: g.id, stage: 0, baseStack: { ...g.startStack } });
+      setStack({ ...g.startStack });
+    }
+    setTab("stack");
+  }
+
+  function advanceGame() {
+    if (!gameProgress || !activeGame) return;
+    if (gameProgress.stage >= activeGame.stages.length - 1) return;
+    setGameProgress({
+      ...gameProgress,
+      stage: gameProgress.stage + 1,
+      baseStack: { ...stack },
+    });
+  }
+
+  // Weights/context editing hides while a challenge or game pins them.
   const showPanels =
-    tab === "compare" || (tab === "stack" && !activeChallenge);
+    tab === "compare" || (tab === "stack" && !activeChallenge && !activeGame);
 
   return (
     <>
@@ -124,6 +161,14 @@ export default function App() {
             onStackChange={setStack}
             activeChallenge={activeChallenge}
             onAbandonChallenge={() => setChallengeId(null)}
+            activeGame={activeGame}
+            gameStage={gameProgress?.stage ?? 0}
+            gameBaseStack={gameProgress?.baseStack ?? {}}
+            onAdvanceGame={advanceGame}
+            onResetStage={() =>
+              gameProgress && setStack({ ...gameProgress.baseStack })
+            }
+            onAbandonGame={() => setGameProgress(null)}
           />
         )}
         {tab === "swap" && <SwapView />}
@@ -131,6 +176,8 @@ export default function App() {
           <ChallengesView
             activeChallengeId={challengeId}
             onTake={takeChallenge}
+            activeGameId={gameProgress?.gameId ?? null}
+            onTakeGame={takeGame}
           />
         )}
         {tab === "learn" && <LearnView />}

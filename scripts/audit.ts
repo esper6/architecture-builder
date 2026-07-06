@@ -121,6 +121,43 @@ for (const t of ALL_TECHS) {
   console.log(`Context modifiers: ${CONTEXT_MODIFIERS.length}`);
 }
 
+// Game solvability: replay every knownSolution through the real engine.
+{
+  const { GAMES } = await import("../src/data/games");
+  const { evaluateStage } = await import("../src/lib/game");
+  const { analyzeStack } = await import("../src/lib/scoring");
+  const { SCENARIO_MAP } = await import("../src/data/scenarios");
+  for (const g of GAMES) {
+    if (g.knownSolution.length !== g.stages.length) {
+      console.log(`ISSUE: game ${g.id} has ${g.knownSolution.length} solutions for ${g.stages.length} stages`);
+      issues++;
+      continue;
+    }
+    let base = g.startStack;
+    g.stages.forEach((stage, i) => {
+      const solution = g.knownSolution[i];
+      const analysis = analyzeStack(
+        solution,
+        SCENARIO_MAP[stage.scenarioId].weights,
+        stage.context,
+      );
+      const result = evaluateStage(stage, analysis, base, solution);
+      if (!result.passed) {
+        console.log(
+          `ISSUE: game ${g.id} stage ${i + 1} knownSolution fails: ` +
+            result.criteria
+              .filter((c) => !c.pass)
+              .map((c) => c.label)
+              .join(" | "),
+        );
+        issues++;
+      }
+      base = solution;
+    });
+  }
+  console.log(`Games: ${GAMES.length}, all knownSolutions replayed`);
+}
+
 const alt = ALL_TECHS.reduce((n, t) => n + t.alternatives.length, 0);
 const pairs = ALL_TECHS.reduce((n, t) => n + (t.pairsWellWith?.length ?? 0), 0);
 const fric = ALL_TECHS.reduce((n, t) => n + (t.frictionWith?.length ?? 0), 0);

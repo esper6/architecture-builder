@@ -46,8 +46,8 @@ const ledgerGroups = await page.locator(".ledger-group").count();
 const floorChips = await page.locator(".floor-chip").count();
 await page.screenshot({ path: `${OUT}/3-stack-healthy.png`, fullPage: true });
 
-// --- Challenges: take the rescue mission, expect a failing checklist + blocker
-await page.getByRole("button", { name: "Challenges" }).click();
+// --- Play tab: take the rescue mission challenge, expect failing checklist + blocker
+await page.getByRole("button", { name: "Play", exact: true }).click();
 await page.waitForTimeout(300);
 await page
   .locator(".challenge-card", { hasText: "Rescue mission" })
@@ -58,6 +58,26 @@ const criteriaFails = await page.locator(".criteria-list li.fail").count();
 const rescueBlockers = await page.locator(".note.blocker").count();
 await page.screenshot({ path: `${OUT}/6-challenge-rescue.png`, fullPage: true });
 // abandon so the persisted state doesn't trap the next tour run
+await page.getByRole("button", { name: "Abandon" }).click();
+await page.waitForTimeout(200);
+
+// --- Scenario game: Black Friday crisis — budget meter should bill a swap
+await page.getByRole("button", { name: "Play", exact: true }).click();
+await page.waitForTimeout(300);
+await page
+  .locator(".challenge-card", { hasText: "Black Friday" })
+  .getByRole("button", { name: "Play →" })
+  .click();
+await page.waitForTimeout(500);
+const budgetZero = await page
+  .locator(".criteria-list li", { hasText: "Migration budget: 0 / 9" })
+  .count();
+await page.getByLabel("Database").selectOption("postgres");
+await page.waitForTimeout(400);
+const budgetTwo = await page
+  .locator(".criteria-list li", { hasText: "Migration budget: 2 / 9" })
+  .count();
+await page.screenshot({ path: `${OUT}/7-game-blackfriday.png`, fullPage: true });
 await page.getByRole("button", { name: "Abandon" }).click();
 await page.waitForTimeout(200);
 
@@ -91,6 +111,9 @@ if (ledgerGroups < 5) errors.push(`expected an obligations ledger, got ${ledgerG
 if (floorChips !== 5) errors.push(`expected 5 floor chips, got ${floorChips}`);
 if (criteriaFails < 1) errors.push("expected the rescue mission to start failing");
 if (rescueBlockers < 1) errors.push("expected the rescue preset to contain a blocker");
+console.log(`game budget meter: zero=${budgetZero}, after swap=${budgetTwo}`);
+if (budgetZero !== 1) errors.push("expected game budget to start at 0/9");
+if (budgetTwo !== 1) errors.push("expected sqlite→postgres to bill 2 effort points");
 if (confused < 1) errors.push("expected confused-with entries for Kafka");
 
 if (errors.length) {

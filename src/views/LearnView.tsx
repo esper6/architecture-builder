@@ -114,6 +114,17 @@ const ADRS: Adr[] = [
     consequences:
       "The constraint is itself the lesson: 'what is our default, and what justifies deviating' is the primary-decision discipline that tech radars enforce at real companies — and two SQL engines inside one app is usually a migration snapshot, not a design. The cost is flattening legitimate compositions (two-tier caching, OLTP + search); the category descriptions carry that nuance instead. Revisit if the app grows saved-stack comparison — a portfolio is just many stacks side by side, and that feature would be the honest way to model 'a company with a ton of apps'.",
   },
+  {
+    id: "ADR-010",
+    title: "Games price change, not perfection",
+    status: "Accepted",
+    context:
+      "Scenario games needed a scoring mechanic. Ranking players on how close they get to some 'best' stack would contradict ADR-005 (there is no best) and teach nothing about the actual constraint architects live under: you are never starting from a blank page, and switching has a cost.",
+    decision:
+      "The game currency is migration effort. Every slot change is billed using the catalog's effort ratings (drop-in 1, moderate 2, rewrite 4; add/decommission 1), and each stage grants a budget. Winning means satisfying the stage's constraints via an affordable path from where you stand. Each game ships with a knownSolution that the audit script replays through the production engine, extending ADR-008's no-answer-key guarantee: solvability is verified continuously, but any path that passes counts.",
+    consequences:
+      "The mechanic teaches the deepest lesson in the catalog: a good architecture is a position with cheap good moves left, which is why monolith → modular monolith → microservices (two moderates) beats monolith → microservices (one rewrite). The costs are deliberately coarse — real migrations aren't integers — but coarse-and-visible beats precise-and-imaginary for a teaching tool.",
+  },
 ];
 
 export function LearnView() {

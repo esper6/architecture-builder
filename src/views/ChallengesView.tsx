@@ -1,5 +1,7 @@
 import type { Challenge } from "../data/challenges";
 import { CHALLENGES } from "../data/challenges";
+import type { Game } from "../lib/game";
+import { GAME_MODE_LABELS, GAMES } from "../data/games";
 import { SCENARIO_MAP } from "../data/scenarios";
 import { describeContext } from "../data/context";
 import { CATEGORY_MAP } from "../data/categories";
@@ -30,18 +32,60 @@ function targetSummary(ch: Challenge): string[] {
 export function ChallengesView({
   activeChallengeId,
   onTake,
+  activeGameId,
+  onTakeGame,
 }: {
   activeChallengeId: string | null;
   onTake: (ch: Challenge) => void;
+  activeGameId: string | null;
+  onTakeGame: (g: Game) => void;
 }) {
   return (
     <div>
-      <p className="secondary" style={{ margin: "1rem 0 0", maxWidth: "52rem" }}>
-        Reading about tradeoffs is one thing; designing under constraints is
-        the actual skill. Each card locks the priority weights and org context
-        to its world and scores your Stack Builder work live. Floors check the{" "}
-        <strong>emergent</strong> profile — a great average with one weak layer
-        will fail, exactly like production.
+      <h2 style={{ marginTop: "1.25rem" }}>Scenario games</h2>
+      <p className="secondary" style={{ margin: "0 0 0", maxWidth: "52rem" }}>
+        Architect your way <em>out</em> of something. You start from a concrete
+        stack and every change costs effort points priced by the catalog's
+        migration ratings — drop-in <strong>1</strong>, migration{" "}
+        <strong>2</strong>, rewrite <strong>4</strong> (adding or
+        decommissioning a layer costs 1). Real architecture is the affordable
+        path, not the ideal endpoint.
+      </p>
+      <div className="challenge-grid">
+        {GAMES.map((g) => {
+          const active = g.id === activeGameId;
+          return (
+            <div className={`card challenge-card${active ? " active" : ""}`} key={g.id}>
+              <p className="section-label">{GAME_MODE_LABELS[g.mode]}</p>
+              <h3 style={{ marginBottom: "0.25rem" }}>{g.name}</h3>
+              <p className="small secondary">{g.brief}</p>
+              <div className="chip-row" style={{ marginBottom: "0.75rem" }}>
+                <span className="target-chip">
+                  {g.stages.length} stage{g.stages.length > 1 ? "s" : ""}
+                </span>
+                {g.stages[0].effortBudget !== undefined ? (
+                  <span className="target-chip">
+                    budget: {g.stages.map((s) => s.effortBudget ?? "—").join(" · ")}
+                  </span>
+                ) : (
+                  <span className="target-chip">stage 1: free build</span>
+                )}
+              </div>
+              <button className="chip take-chip" onClick={() => onTakeGame(g)}>
+                {active ? "Resume in Stack Builder →" : "Play →"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <h2 style={{ marginTop: "2rem" }}>Design challenges</h2>
+      <p className="secondary" style={{ margin: "0 0 0", maxWidth: "52rem" }}>
+        Freeform builds under constraints — no budget, just judgment. Each card
+        locks the priority weights and org context to its world and scores your
+        Stack Builder work live. Floors check the <strong>emergent</strong>{" "}
+        profile — a great average with one weak layer will fail, exactly like
+        production.
       </p>
       <div className="challenge-grid">
         {CHALLENGES.map((ch) => {
