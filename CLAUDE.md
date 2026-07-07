@@ -29,9 +29,13 @@ UI you touched (playwright is a devDependency; use `--channel chrome`).
 - Every tech needs ≥2 `commitments` and every `alternatives` edge needs an
   `effort` rating — the audit fails otherwise. Effort ratings are also the
   **game currency** (drop-in 1 / moderate 2 / rewrite 4).
-- Every game in `src/data/games.ts` must carry a `knownSolution` per stage;
-  the audit replays them through the real engine. Rebalancing any score can
-  break a game — the audit will catch it; fix the game or the balance.
+- Every game in `src/data/games.ts` (per stage) AND every challenge in
+  `src/data/challenges.ts` must carry a `knownSolution`; the audit replays
+  them through the real engine. Rebalancing any score or modifier can break
+  one — the audit will catch it; fix the card or the balance. (This risk
+  fired once: ADR-007's emergent floors silently bricked four challenges.)
+  Note the ceiling logic when setting `minOverall`: floors dominate the
+  emergent overall, so realistic targets sit around 6.2–6.5, not 7+.
 - Stack aggregation is **emergent, not averaged** (`AGGREGATION` in
   `src/lib/scoring.ts`): perf/scalability/ops/typeSafety/maturity floor at the
   worst layer, the rest average.
