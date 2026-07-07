@@ -25,6 +25,13 @@ export interface Challenge {
     requiredLayers?: CategoryId[];
   };
   hint: string;
+  /**
+   * A stack that passes this challenge, replayed through the real engine by
+   * `npm run audit:data` (same guarantee the games have): a catalog or
+   * modifier rebalance can never silently make a challenge unwinnable.
+   * Never shown in the UI — any passing stack counts.
+   */
+  knownSolution: Partial<Record<CategoryId, TechId>>;
 }
 
 export const CHALLENGES: Challenge[] = [
@@ -42,6 +49,16 @@ export const CHALLENGES: Challenge[] = [
       floors: { opsSimplicity: 7 },
     },
     hint: "The ops floor is the trap: one 'interesting' infrastructure choice sets it. Boring is the strategy, and optional layers you skip can't page you.",
+    knownSolution: {
+      architecture: "monolith",
+      frontend: "react",
+      backend: "aspnet-core",
+      "api-style": "rest",
+      "data-access": "ef-core",
+      database: "sqlite",
+      auth: "session-auth",
+      hosting: "paas-containers",
+    },
   },
   {
     id: "edi-backbone",
@@ -51,13 +68,23 @@ export const CHALLENGES: Challenge[] = [
     scenarioId: "integration-heavy",
     context: { teamSize: "mid", platformTeam: false, compliance: true },
     targets: {
-      minOverall: 7,
+      minOverall: 6.2,
       noBlockers: true,
       maxWarnings: 1,
       floors: { maturity: 6, opsSimplicity: 4 },
       requiredLayers: ["messaging", "auth"],
     },
-    hint: "You need messaging, but the flashy broker sets your ops floor without a platform team. Which queue semantics do document flows actually need?",
+    hint: "You need messaging, but the flashy broker sets your ops floor without a platform team — and EVERY broker caps your type-safety floor, which is why the overall bar here is honest rather than heroic. Which queue semantics do document flows actually need?",
+    knownSolution: {
+      architecture: "monolith",
+      backend: "aspnet-core",
+      "api-style": "rest",
+      "data-access": "ef-core",
+      database: "postgres",
+      messaging: "azure-service-bus",
+      auth: "managed-idp",
+      hosting: "paas-containers",
+    },
   },
   {
     id: "hypergrowth",
@@ -67,11 +94,20 @@ export const CHALLENGES: Challenge[] = [
     scenarioId: "high-scale",
     context: { teamSize: "large", platformTeam: true, compliance: false },
     targets: {
-      minOverall: 7,
+      minOverall: 6.3,
       noBlockers: true,
       floors: { scalability: 8, performance: 6 },
     },
-    hint: "The platform team flips several ops scores — infrastructure that would be reckless at 10 devs is table stakes here. Your floor risk moves to the layers that don't scale out.",
+    hint: "The platform team flips several ops scores — infrastructure that would be reckless at 10 devs is table stakes here. Your floor risk moves to the layers that don't scale out — and note the scalability-8 floor quietly disqualifies most relational databases.",
+    knownSolution: {
+      architecture: "event-driven",
+      frontend: "react",
+      backend: "aspnet-core",
+      "api-style": "rest",
+      database: "cassandra",
+      auth: "jwt-auth",
+      hosting: "kubernetes",
+    },
   },
   {
     id: "regulated-fintech",
@@ -81,12 +117,22 @@ export const CHALLENGES: Challenge[] = [
     scenarioId: "regulated",
     context: { teamSize: "mid", platformTeam: false, compliance: true },
     targets: {
-      minOverall: 7,
+      minOverall: 6.2,
       noBlockers: true,
       maxWarnings: 1,
       floors: { typeSafety: 6, maturity: 7 },
     },
-    hint: "The type-safety floor is end-to-end: one untyped seam (in ANY layer) sets it. Check your frontend and API style, not just the backend.",
+    hint: "The type-safety floor is end-to-end: one untyped seam in ANY layer sets it — REST's optional contracts fail it, and so does every hosting option's config story. Sometimes the passing answer is not filling a slot.",
+    knownSolution: {
+      architecture: "monolith",
+      frontend: "react",
+      backend: "aspnet-core",
+      "api-style": "grpc",
+      "data-access": "ef-core",
+      database: "mssql",
+      caching: "in-process-cache",
+      auth: "managed-idp",
+    },
   },
   {
     id: "rescue-mission",
@@ -112,7 +158,17 @@ export const CHALLENGES: Challenge[] = [
       noBlockers: true,
       maxWarnings: 0,
     },
-    hint: "Start with the blocker (tRPC needs a Node backend — which side of that pair fits the rest?), then hunt the frictions: Kafka under a monolith, K8s for one deployable, two servers fighting over rendering.",
+    hint: "Start with the blocker (tRPC needs a Node backend — which side of that pair fits the rest?), then hunt the frictions: Kafka under a monolith, K8s for one deployable, two servers fighting over rendering. Decommissioning layers that earn nothing raises your floors.",
+    knownSolution: {
+      architecture: "monolith",
+      frontend: "react",
+      backend: "aspnet-core",
+      "api-style": "rest",
+      "data-access": "ef-core",
+      database: "postgres",
+      auth: "session-auth",
+      hosting: "paas-containers",
+    },
   },
   {
     id: "boring-is-a-feature",
@@ -122,10 +178,21 @@ export const CHALLENGES: Challenge[] = [
     scenarioId: "enterprise-lob",
     context: { teamSize: "large", platformTeam: false, compliance: true },
     targets: {
-      minOverall: 7.2,
+      minOverall: 6.2,
       noBlockers: true,
       floors: { maturity: 8, opsSimplicity: 5 },
     },
-    hint: "Large team, no platform team — the guardrail frameworks get context bonuses here and the exciting infrastructure gets none. Maturity floor 8 rules out anything that reworked itself recently.",
+    hint: "Large team, no platform team — the guardrail frameworks get context bonuses here and the exciting infrastructure gets none. Maturity floor 8 rules out anything that reworked itself recently, including the modular monolith.",
+    knownSolution: {
+      architecture: "monolith",
+      frontend: "angular",
+      backend: "aspnet-core",
+      "api-style": "rest",
+      "data-access": "ef-core",
+      database: "mssql",
+      caching: "in-process-cache",
+      auth: "managed-idp",
+      hosting: "paas-containers",
+    },
   },
 ];

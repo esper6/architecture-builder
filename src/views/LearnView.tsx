@@ -101,7 +101,7 @@ const ADRS: Adr[] = [
     decision:
       "Challenges declare constraints (overall fit, floors on the emergent profile, warning budgets, required layers) and are evaluated live by the same analyzeStack call the Stack Builder renders.",
     consequences:
-      "Any stack satisfying the constraints passes — there are many right answers, which is the point. Catalog changes automatically propagate to challenge difficulty (a risk: a rebalance could make a challenge trivial or impossible, so the audit script should eventually assert each challenge remains solvable).",
+      "Any stack satisfying the constraints passes — there are many right answers, which is the point. Catalog changes automatically propagate to challenge difficulty — and that risk fired for real: the emergent-aggregation change (ADR-007) silently made four of six challenges unwinnable. The fix is the games' guarantee applied here too: every challenge carries a knownSolution the audit replays through the engine, so an unsolvable card now fails CI instead of frustrating a player.",
   },
   {
     id: "ADR-009",

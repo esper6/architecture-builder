@@ -158,6 +158,34 @@ for (const t of ALL_TECHS) {
   console.log(`Games: ${GAMES.length}, all knownSolutions replayed`);
 }
 
+// Challenge solvability: replay every knownSolution through the real engine
+// (same guarantee as games — ADR-008's noted risk, closed).
+{
+  const { CHALLENGES } = await import("../src/data/challenges");
+  const { evaluateChallenge } = await import("../src/lib/challenge");
+  const { analyzeStack } = await import("../src/lib/scoring");
+  const { SCENARIO_MAP } = await import("../src/data/scenarios");
+  for (const ch of CHALLENGES) {
+    const analysis = analyzeStack(
+      ch.knownSolution,
+      SCENARIO_MAP[ch.scenarioId].weights,
+      ch.context,
+    );
+    const result = evaluateChallenge(ch, analysis);
+    if (!result.passed) {
+      console.log(
+        `ISSUE: challenge ${ch.id} knownSolution fails: ` +
+          result.criteria
+            .filter((c) => !c.pass)
+            .map((c) => c.label)
+            .join(" | "),
+      );
+      issues++;
+    }
+  }
+  console.log(`Challenges: ${CHALLENGES.length}, all knownSolutions replayed`);
+}
+
 // Incident structure: culprit must be in the stack, exactly one correct
 // mechanism, herring keys must reference stack members.
 {
